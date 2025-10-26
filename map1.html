@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Карта поселка</title>
+    <title>Карта поселка "Солнечный"</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --color-background: #f5f5f5;
@@ -20,9 +21,10 @@
             --color-forest: #a5d6a7;
             --color-plot: rgba(255, 255, 255, 0.3);
             --color-plot-border: rgba(33, 128, 141, 0.4);
-            --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
+        /* Адаптация под темную тему Telegram */
         @media (prefers-color-scheme: dark) {
             :root {
                 --color-background: #1f2121;
@@ -52,43 +54,47 @@
             background-color: var(--color-background);
             color: var(--color-text);
             overflow: hidden;
+            height: 100vh;
+            /* Учитываем верхнюю панель Telegram */
+            padding-top: env(safe-area-inset-top);
         }
 
         .container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100%;
         }
 
         .header {
             background-color: var(--color-surface);
-            padding: 12px 16px;
+            padding: 8px 12px;
             border-bottom: 1px solid var(--color-road-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 100;
+            flex-shrink: 0;
         }
 
         .title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--color-text);
         }
 
         .controls {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             background-color: var(--color-primary);
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
             transition: opacity 0.2s;
         }
@@ -107,6 +113,7 @@
             position: relative;
             overflow: hidden;
             background-color: var(--color-grass);
+            touch-action: none;
         }
 
         .map-canvas {
@@ -115,6 +122,8 @@
             left: 0;
             cursor: grab;
             transform-origin: 0 0;
+            width: 3000px;
+            height: 3000px;
         }
 
         .map-canvas.dragging {
@@ -170,19 +179,19 @@
 
         .label {
             font-family: var(--font-family-base);
-            font-size: 12px;
+            font-size: 10px;
             fill: var(--color-text);
             pointer-events: none;
         }
 
         .label-small {
-            font-size: 10px;
+            font-size: 8px;
             fill: var(--color-text-secondary);
         }
 
         .camera {
             fill: black;
-            r: 4;
+            r: 3;
         }
 
         .camera-view {
@@ -193,7 +202,7 @@
 
         .pedestrian {
             fill: red;
-            r: 3;
+            r: 2;
         }
 
         .pedestrian.caught {
@@ -201,20 +210,20 @@
         }
 
         @keyframes caught-blink {
-            0% { fill: red; r: 3; }
-            50% { fill: yellow; r: 4; }
-            100% { fill: red; r: 3; }
+            0% { fill: red; r: 2; }
+            50% { fill: yellow; r: 3; }
+            100% { fill: red; r: 2; }
         }
 
         .drone {
             fill: #666;
-            r: 4;
+            r: 3;
         }
 
         .police-car {
             fill: blue;
-            width: 12px;
-            height: 8px;
+            width: 10px;
+            height: 6px;
         }
 
         .alert {
@@ -228,24 +237,24 @@
 
         .zoom-controls {
             position: absolute;
-            right: 16px;
-            bottom: 16px;
+            right: 12px;
+            bottom: 12px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             background-color: var(--color-surface);
-            padding: 8px;
-            border-radius: 8px;
+            padding: 6px;
+            border-radius: 6px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .zoom-btn {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border: none;
             background-color: var(--color-primary);
             color: white;
-            font-size: 20px;
+            font-size: 18px;
             border-radius: 6px;
             cursor: pointer;
             display: flex;
@@ -260,20 +269,21 @@
 
         .legend {
             position: absolute;
-            left: 16px;
-            bottom: 16px;
+            left: 12px;
+            bottom: 12px;
             background-color: var(--color-surface);
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            font-size: 12px;
+            font-size: 10px;
+            max-width: 150px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
+            gap: 6px;
+            margin-bottom: 4px;
         }
 
         .legend-item:last-child {
@@ -281,22 +291,22 @@
         }
 
         .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
             border: 1px solid var(--color-road-border);
         }
 
         .info-panel {
             position: absolute;
-            top: 16px;
-            left: 16px;
+            top: 12px;
+            left: 12px;
             background-color: var(--color-surface);
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            font-size: 13px;
-            max-width: 250px;
+            font-size: 11px;
+            max-width: 200px;
         }
 
         .info-panel strong {
@@ -306,9 +316,52 @@
         }
 
         .info-panel p {
-            margin: 4px 0;
+            margin: 3px 0;
             color: var(--color-text-secondary);
-            line-height: 1.4;
+            line-height: 1.3;
+        }
+
+        /* Стили для мобильных устройств */
+        @media (max-width: 768px) {
+            .header {
+                padding: 6px 10px;
+            }
+            
+            .title {
+                font-size: 14px;
+            }
+            
+            .btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+            
+            .zoom-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            
+            .info-panel, .legend {
+                font-size: 9px;
+            }
+        }
+
+        /* Стили для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .controls {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+            
+            .btn {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+            
+            .info-panel, .legend {
+                max-width: 140px;
+            }
         }
     </style>
 </head>
@@ -317,7 +370,7 @@
         <div class="header">
             <div class="title">🗺️ Карта поселка "Солнечный"</div>
             <div class="controls">
-                <button class="btn btn-secondary" onclick="resetView()">Сбросить вид</button>
+                <button class="btn btn-secondary" onclick="resetView()">Сброс</button>
                 <button class="btn" onclick="toggleCameras()">Камеры</button>
                 <button class="btn" onclick="togglePedestrians()">Пешеходы</button>
             </div>
@@ -403,7 +456,7 @@
                 <text class="label-small" x="250" y="200" text-anchor="middle">Дом 2</text>
 
                 <rect class="plot" id="plot3" x="390" y="120" width="120" height="120"/>
-                <rect class="building" x="420" y="120" width="70" height="100"/>
+                <rect class="building" x="420" y="120" width="70, height="100"/>
                 <text class="label-small" x="440" y="220" text-anchor="middle">Дом 3</text>
 
                 <rect class="plot" id="plot4" x="560" y="360" width="140" height="140"/>
@@ -579,12 +632,14 @@
                 <rect class="building" x="1190" y="300" width="150" height="150" fill="#ffccbc"/>
                 <text class="label" x="1230" y="350" text-anchor="middle" font-weight="600">Школа</text>
 
-                <rect class="plot" id="plot-shop" x="460" y="850" width="140" height="120"/>
-                <rect class="building" x="460" y="850" width="120" height="100" fill="#f0f4c3"/>
-                <text class="label" x="500" y="870" text-anchor="middle" font-weight="600">Магазин</text>
-                <rect class="plot" id="plot-security" x="2290" y="1330" width="120" height="120"/>
+                <!-- Заменяем магазин на второй пункт охраны -->
+                <rect class="plot" id="plot-security2" x="460" y="850" width="140" height="120"/>
+                <rect class="building" x="460" y="850" width="120" height="100" fill="#ffecb3"/>
+                <text class="label" x="500" y="870" text-anchor="middle" font-weight="600">Охрана 2</text>
+                
+                <rect class="plot" id="plot-security1" x="2290" y="1330" width="120" height="120"/>
                 <rect class="building" x="2300" y="1340" width="100" height="100" fill="#ffecb3"/>
-                <text class="label" x="2340" y="1370" text-anchor="middle" font-weight="600">Охрана</text>
+                <text class="label" x="2340" y="1370" text-anchor="middle" font-weight="600">Охрана 1</text>
 
                 <rect class="plot" id="plot-cafe" x="1770" y="1500" width="140" height="120"/>
                 <rect class="building" x="1780" y="1510" width="120" height="100" fill="#d7ccc8"/>
@@ -773,17 +828,64 @@
                 <p>Население: ~89 человек</p>
                 <p>Жилых домов: 46</p>
                 <p>Камер наблюдения: 30</p>
-                <p id="pedestrianCount">Пешеходов: 0/2</p>
+                <p id="pedestrianCount">Пешеходов: 0/1</p>
                 <p id="alertStatus">Статус: Норма</p>
+            </div>
+
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()">+</button>
+                <button class="zoom-btn" onclick="zoomOut()">-</button>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--color-building);"></div>
+                    <span>Жилые дома</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--color-forest);"></div>
+                    <span>Лесные массивы</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--color-water);"></div>
+                    <span>Водоемы</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--color-plot); border: 1px dashed var(--color-plot-border);"></div>
+                    <span>Участки</span>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        
+        // Расширяем приложение на весь экран
+        tg.expand();
+        
+        // Настройка цветовой схемы в соответствии с Telegram
+        if (tg.colorScheme === 'dark') {
+            document.documentElement.style.setProperty('--color-background', '#1f2121');
+            document.documentElement.style.setProperty('--color-surface', '#262828');
+            document.documentElement.style.setProperty('--color-text', '#f5f5f5');
+            document.documentElement.style.setProperty('--color-text-secondary', '#a7a9a9');
+            document.documentElement.style.setProperty('--color-road', '#3a3c3c');
+            document.documentElement.style.setProperty('--color-road-border', '#4a4c4c');
+            document.documentElement.style.setProperty('--color-grass', '#2d4a2e');
+            document.documentElement.style.setProperty('--color-building', '#2a3a4a');
+            document.documentElement.style.setProperty('--color-building-border', '#3a5a7a');
+            document.documentElement.style.setProperty('--color-water', '#1a3a5a');
+            document.documentElement.style.setProperty('--color-forest', '#254a2a');
+            document.documentElement.style.setProperty('--color-plot', 'rgba(255, 255, 255, 0.1)');
+            document.documentElement.style.setProperty('--color-plot-border', 'rgba(33, 128, 141, 0.3)');
+        }
+
         const canvas = document.getElementById('mapCanvas');
         const container = document.getElementById('mapContainer');
 
-        let scale = 0.4;
+        let scale = 0.3; // Уменьшенный начальный масштаб для мобильных устройств
         let translateX = 0;
         let translateY = 0;
         let isDragging = false;
@@ -794,8 +896,14 @@
         let drones = [];
         let policeCars = [];
         let pedestrianCount = 0;
-        const maxPedestrians = 2;
+        const maxPedestrians = 1; // Теперь только 1 красная точка
         let alertMode = false;
+
+        // Координаты пунктов охраны
+        const securityPosts = [
+            {x: 2340, y: 1390, name: "Охрана 1"}, // Первый пункт
+            {x: 520, y: 910, name: "Охрана 2"}    // Второй пункт (бывший магазин)
+        ];
 
         // Определим сетку дорог для навигации
         const roadNetwork = {
@@ -887,38 +995,41 @@
 
         // Система пешеходов
         function startPedestrianSpawning() {
-            // Создаем пешеходов с случайными интервалами
-            setInterval(() => {
-                if (pedestriansVisible && pedestrians.length < maxPedestrians) {
-                    spawnPedestrian();
-                }
-            }, 3000 + Math.random() * 5000);
+            // Создаем только одного пешехода
+            if (pedestriansVisible && pedestrians.length < maxPedestrians) {
+                spawnPedestrian();
+            }
 
             // Анимируем пешеходов
             setInterval(movePedestrians, 50);
-
+            
             // Проверяем пересечение с участками
             setInterval(checkPlotIntersections, 100);
+            
+            // Проверяем встречу с дронами и машинами
+            setInterval(checkSecurityUnitIntersections, 100);
         }
 
         function spawnPedestrian() {
             const spawnPoint = getRandomRoadPoint();
             const targetHouse = getRandomHouse();
-
+            
             const pedestrian = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             pedestrian.setAttribute('class', 'pedestrian');
             pedestrian.setAttribute('cx', spawnPoint.x);
             pedestrian.setAttribute('cy', spawnPoint.y);
-            pedestrian.setAttribute('r', 3);
-
+            pedestrian.setAttribute('r', 2);
+            
             canvas.appendChild(pedestrian);
-
+            
             const speed = 1 + Math.random() * 2;
-
+            
             pedestrians.push({
                 element: pedestrian,
                 x: spawnPoint.x,
                 y: spawnPoint.y,
+                startX: spawnPoint.x, // Запоминаем стартовую точку
+                startY: spawnPoint.y,
                 targetX: targetHouse.x,
                 targetY: targetHouse.y,
                 speed: speed,
@@ -926,9 +1037,10 @@
                 currentPlot: null,
                 currentPathIndex: 0,
                 detected: false,
-                caught: false
+                caught: false,
+                returning: false // Флаг для возвращения
             });
-
+            
             pedestrianCount++;
             updatePedestrianCount();
         }
@@ -936,21 +1048,21 @@
         function getRandomRoadPoint() {
             // Собираем все возможные точки на дорогах
             const roadPoints = [];
-
+            
             // Добавляем точки с горизонтальных дорог
             roadNetwork.horizontal.forEach(road => {
                 for (let x = road.xStart; x <= road.xEnd; x += 50) {
                     roadPoints.push({x: x, y: road.y});
                 }
             });
-
+            
             // Добавляем точки с вертикальных дорог
             roadNetwork.vertical.forEach(road => {
                 for (let y = road.yStart; y <= road.yEnd; y += 50) {
                     roadPoints.push({x: road.x, y: y});
                 }
             });
-
+            
             // Возвращаем случайную точку
             return roadPoints[Math.floor(Math.random() * roadPoints.length)];
         }
@@ -972,29 +1084,29 @@
                 {x: 2110, y: 900}, {x: 925, y: 1430}, {x: 1300, y: 1430},
                 {x: 1125, y: 1430}, {x: 1685, y: 1410}, {x: 1885, y: 1410}
             ];
-
+            
             return houses[Math.floor(Math.random() * houses.length)];
         }
 
         function generateRoadPath(startX, startY, targetX, targetY) {
             const path = [];
-
+            
             // Находим ближайшую дорогу к цели
             const closestRoadPoint = findClosestRoadPoint(targetX, targetY);
-
+            
             // Если стартовая точка не на дороге, сначала идем к ближайшей дороге
             if (!isOnRoad(startX, startY)) {
                 const closestStartRoad = findClosestRoadPoint(startX, startY);
                 path.push(closestStartRoad);
             }
-
+            
             // Находим путь по дорогам от текущей позиции до ближайшей к цели дороги
             const roadPath = findRoadPath(startX, startY, closestRoadPoint.x, closestRoadPoint.y);
             path.push(...roadPath);
-
+            
             // Добавляем конечную точку (близко к дому)
             path.push({x: targetX, y: targetY});
-
+            
             return path;
         }
 
@@ -1005,21 +1117,21 @@
                     return true;
                 }
             }
-
+            
             // Проверяем вертикальные дороги
             for (const road of roadNetwork.vertical) {
                 if (Math.abs(x - road.x) < 10 && y >= road.yStart && y <= road.yEnd) {
                     return true;
                 }
             }
-
+            
             return false;
         }
 
         function findClosestRoadPoint(x, y) {
             let closestPoint = null;
             let minDistance = Infinity;
-
+            
             // Проверяем горизонтальные дороги
             roadNetwork.horizontal.forEach(road => {
                 const distance = Math.abs(y - road.y);
@@ -1028,7 +1140,7 @@
                     closestPoint = {x: Math.max(road.xStart, Math.min(road.xEnd, x)), y: road.y};
                 }
             });
-
+            
             // Проверяем вертикальные дороги
             roadNetwork.vertical.forEach(road => {
                 const distance = Math.abs(x - road.x);
@@ -1037,30 +1149,30 @@
                     closestPoint = {x: road.x, y: Math.max(road.yStart, Math.min(road.yEnd, y))};
                 }
             });
-
+            
             return closestPoint;
         }
 
         function findRoadPath(startX, startY, targetX, targetY) {
             const path = [];
-
+            
             // Простой алгоритм: сначала идем по горизонтали, затем по вертикали
             // но только если есть соответствующие дороги
-
+            
             // Определяем, можем ли мы идти по горизонтали
-            const canGoHorizontal = roadNetwork.horizontal.some(road =>
-                Math.abs(startY - road.y) < 10 &&
+            const canGoHorizontal = roadNetwork.horizontal.some(road => 
+                Math.abs(startY - road.y) < 10 && 
                 ((startX <= targetX && road.xStart <= targetX && road.xEnd >= startX) ||
                  (startX >= targetX && road.xStart <= startX && road.xEnd >= targetX))
             );
-
+            
             // Определяем, можем ли мы идти по вертикали
-            const canGoVertical = roadNetwork.vertical.some(road =>
-                Math.abs(targetX - road.x) < 10 &&
+            const canGoVertical = roadNetwork.vertical.some(road => 
+                Math.abs(targetX - road.x) < 10 && 
                 ((startY <= targetY && road.yStart <= targetY && road.yEnd >= startY) ||
                  (startY >= targetY && road.yStart <= startY && road.yEnd >= targetY))
             );
-
+            
             if (canGoHorizontal && canGoVertical) {
                 // Идем сначала по горизонтали, затем по вертикали
                 path.push({x: targetX, y: startY});
@@ -1081,7 +1193,7 @@
                     path.push({x: targetX, y: targetY});
                 }
             }
-
+            
             return path;
         }
 
@@ -1091,11 +1203,11 @@
                 for (const vRoad of roadNetwork.vertical) {
                     if (hRoad.xStart <= vRoad.x && hRoad.xEnd >= vRoad.x &&
                         vRoad.yStart <= hRoad.y && vRoad.yEnd >= hRoad.y) {
-
+                        
                         // Проверяем, доступна ли эта точка от старта
                         const fromStart = findRoadPath(startX, startY, vRoad.x, hRoad.y);
                         const toTarget = findRoadPath(vRoad.x, hRoad.y, targetX, targetY);
-
+                        
                         if (fromStart.length > 0 && toTarget.length > 0) {
                             return {x: vRoad.x, y: hRoad.y};
                         }
@@ -1108,13 +1220,13 @@
         function movePedestrians() {
             pedestrians.forEach((pedestrian, index) => {
                 if (pedestrian.caught) return; // Если пойман, не двигаемся
-
+                
                 if (pedestrian.path.length > 0 && pedestrian.currentPathIndex < pedestrian.path.length) {
                     const nextPoint = pedestrian.path[pedestrian.currentPathIndex];
                     const dx = nextPoint.x - pedestrian.x;
                     const dy = nextPoint.y - pedestrian.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-
+                    
                     if (distance < pedestrian.speed) {
                         // Достигли точки пути
                         pedestrian.x = nextPoint.x;
@@ -1126,27 +1238,37 @@
                         pedestrian.x += Math.cos(angle) * pedestrian.speed;
                         pedestrian.y += Math.sin(angle) * pedestrian.speed;
                     }
-
+                    
                     pedestrian.element.setAttribute('cx', pedestrian.x);
                     pedestrian.element.setAttribute('cy', pedestrian.y);
                 } else {
-                    // Достигли цели - удаляем пешехода через 2 секунды
-                    if (!pedestrian.finished) {
-                        pedestrian.finished = true;
-                        setTimeout(() => {
-                            const idx = pedestrians.indexOf(pedestrian);
-                            if (idx > -1) {
-                                canvas.removeChild(pedestrian.element);
-                                pedestrians.splice(idx, 1);
-                                pedestrianCount--;
-                                updatePedestrianCount();
-
-                                // Останавливаем мигание
-                                if (pedestrian.currentPlot) {
-                                    pedestrian.currentPlot.classList.remove('blinking');
-                                }
+                    // Достигли цели
+                    if (!pedestrian.returning) {
+                        // Первый раз достигли дома - начинаем возвращение
+                        pedestrian.returning = true;
+                        pedestrian.path = generateRoadPath(pedestrian.x, pedestrian.y, pedestrian.startX, pedestrian.startY);
+                        pedestrian.currentPathIndex = 0;
+                    } else {
+                        // Вернулись к стартовой точке - удаляем пешехода и создаем нового
+                        const idx = pedestrians.indexOf(pedestrian);
+                        if (idx > -1) {
+                            canvas.removeChild(pedestrian.element);
+                            pedestrians.splice(idx, 1);
+                            pedestrianCount--;
+                            updatePedestrianCount();
+                            
+                            // Останавливаем мигание
+                            if (pedestrian.currentPlot) {
+                                pedestrian.currentPlot.classList.remove('blinking');
                             }
-                        }, 2000);
+                            
+                            // Создаем нового пешехода
+                            setTimeout(() => {
+                                if (pedestriansVisible && pedestrians.length < maxPedestrians) {
+                                    spawnPedestrian();
+                                }
+                            }, 2000);
+                        }
                     }
                 }
             });
@@ -1154,53 +1276,134 @@
 
         function checkPlotIntersections() {
             const plots = document.querySelectorAll('.plot');
-
+            
             pedestrians.forEach(pedestrian => {
                 if (pedestrian.caught) return; // Если пойман, не проверяем
-
+                
                 let foundPlot = null;
-
+                
                 // Проверяем каждый участок на пересечение с пешеходом
                 plots.forEach(plot => {
                     const plotRect = plot.getBoundingClientRect();
                     const canvasRect = canvas.getBoundingClientRect();
-
+                    
                     // Преобразуем координаты пешехода в координаты экрана
                     const scaleX = canvasRect.width / 3000;
                     const scaleY = canvasRect.height / 3000;
-
+                    
                     const pedestrianScreenX = canvasRect.left + pedestrian.x * scaleX;
                     const pedestrianScreenY = canvasRect.top + pedestrian.y * scaleY;
-
+                    
                     if (pedestrianScreenX >= plotRect.left && pedestrianScreenX <= plotRect.right &&
                         pedestrianScreenY >= plotRect.top && pedestrianScreenY <= plotRect.bottom) {
                         foundPlot = plot;
                     }
                 });
-
+                
                 // Если пешеход вошел на новый участок
                 if (foundPlot && foundPlot !== pedestrian.currentPlot) {
                     // Останавливаем мигание предыдущего участка
                     if (pedestrian.currentPlot) {
                         pedestrian.currentPlot.classList.remove('blinking');
                     }
-
+                    
                     // Запускаем мигание нового участка
                     foundPlot.classList.add('blinking');
                     pedestrian.currentPlot = foundPlot;
-
+                    
                     // Помечаем пешехода как обнаруженного
                     if (!pedestrian.detected) {
                         pedestrian.detected = true;
                         triggerSecurityAlert(pedestrian);
                     }
                 }
-
+                
                 // Если пешеход покинул участок
                 if (!foundPlot && pedestrian.currentPlot) {
                     pedestrian.currentPlot.classList.remove('blinking');
                     pedestrian.currentPlot = null;
                 }
+            });
+        }
+
+        function checkSecurityUnitIntersections() {
+            pedestrians.forEach(pedestrian => {
+                if (pedestrian.caught) return;
+                
+                // Проверяем пересечение с дронами
+                drones.forEach(drone => {
+                    const dx = pedestrian.x - drone.x;
+                    const dy = pedestrian.y - drone.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 15) { // Если пешеход близко к дрону
+                        catchPedestrian(pedestrian, drone);
+                    }
+                });
+                
+                // Проверяем пересечение с машинами
+                policeCars.forEach(car => {
+                    const dx = pedestrian.x - car.x;
+                    const dy = pedestrian.y - car.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 20) { // Если пешеход близко к машине
+                        catchPedestrian(pedestrian, car);
+                    }
+                });
+            });
+        }
+
+        function catchPedestrian(pedestrian, securityUnit) {
+            if (pedestrian.caught) return;
+            
+            pedestrian.caught = true;
+            pedestrian.element.classList.add('caught');
+            
+            // Останавливаем пешехода рядом с дроном/машиной
+            const offsetX = (Math.random() - 0.5) * 10;
+            const offsetY = (Math.random() - 0.5) * 10;
+            pedestrian.x = securityUnit.x + offsetX;
+            pedestrian.y = securityUnit.y + offsetY;
+            pedestrian.element.setAttribute('cx', pedestrian.x);
+            pedestrian.element.setAttribute('cy', pedestrian.y);
+            
+            // Через 3 секунды удаляем пешехода и создаем нового
+            setTimeout(() => {
+                const idx = pedestrians.indexOf(pedestrian);
+                if (idx > -1) {
+                    canvas.removeChild(pedestrian.element);
+                    pedestrians.splice(idx, 1);
+                    pedestrianCount--;
+                    updatePedestrianCount();
+                    
+                    // Останавливаем мигание участка
+                    if (pedestrian.currentPlot) {
+                        pedestrian.currentPlot.classList.remove('blinking');
+                    }
+                    
+                    // Возвращаем дроны и машины на базу
+                    returnAllSecurityUnits();
+                    
+                    // Создаем нового пешехода
+                    setTimeout(() => {
+                        if (pedestriansVisible && pedestrians.length < maxPedestrians) {
+                            spawnPedestrian();
+                        }
+                    }, 2000);
+                }
+            }, 3000);
+        }
+
+        function returnAllSecurityUnits() {
+            // Возвращаем всех дронов на базу
+            drones.forEach((drone, index) => {
+                returnDroneToBase(drone, index);
+            });
+            
+            // Возвращаем все машины на базу
+            policeCars.forEach((car, index) => {
+                returnCarToBase(car, index);
             });
         }
 
@@ -1212,31 +1415,31 @@
         function startSecuritySystem() {
             // Проверяем пересечение с камерами каждые 100 мс
             setInterval(checkCameraIntersections, 100);
-
+            
             // Анимируем дронов и полицейские машины
             setInterval(moveSecurityUnits, 50);
         }
 
         function checkCameraIntersections() {
             if (!camerasVisible) return;
-
+            
             const cameraGroups = document.querySelectorAll('.camera-group');
-
+            
             pedestrians.forEach(pedestrian => {
                 if (pedestrian.detected || pedestrian.caught) return; // Уже обнаружен или пойман
-
+                
                 cameraGroups.forEach(cameraGroup => {
                     const cameraView = cameraGroup.querySelector('.camera-view');
                     const camera = cameraGroup.querySelector('.camera');
-
+                    
                     const cameraX = parseFloat(camera.getAttribute('cx'));
                     const cameraY = parseFloat(camera.getAttribute('cy'));
-
+                    
                     // Простая проверка расстояния от камеры до пешехода
                     const dx = pedestrian.x - cameraX;
                     const dy = pedestrian.y - cameraY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-
+                    
                     // Если пешеход в зоне обнаружения камеры
                     if (distance < 100) {
                         pedestrian.detected = true;
@@ -1248,17 +1451,19 @@
 
         function triggerSecurityAlert(pedestrian) {
             if (alertMode) return; // Уже в режиме тревоги
-
+            
             alertMode = true;
             document.getElementById('alertStatus').textContent = 'Статус: ТРЕВОГА!';
             document.getElementById('alertStatus').classList.add('alert');
-
-            // Через 2 секунды отправляем дронов и машину
+            
+            // Через 2 секунды отправляем дронов и машины из обоих пунктов охраны
             setTimeout(() => {
-                launchDrones(pedestrian);
-                launchPoliceCar(pedestrian);
+                securityPosts.forEach(post => {
+                    launchDronesFromPost(pedestrian, post);
+                    launchPoliceCarFromPost(pedestrian, post);
+                });
             }, 2000);
-
+            
             // Через 30 секунд сбрасываем тревогу
             setTimeout(() => {
                 resetSecurityAlert();
@@ -1271,55 +1476,51 @@
             document.getElementById('alertStatus').classList.remove('alert');
         }
 
-        function launchDrones(pedestrian) {
-            const securityX = 2340; // Координаты охраны
-            const securityY = 1390;
-
-            // Запускаем 2 дрона
+        function launchDronesFromPost(pedestrian, post) {
+            // Запускаем 2 дрона из каждого пункта охраны
             for (let i = 0; i < 2; i++) {
                 const drone = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 drone.setAttribute('class', 'drone');
-                drone.setAttribute('cx', securityX);
-                drone.setAttribute('cy', securityY);
-                drone.setAttribute('r', 4);
+                drone.setAttribute('cx', post.x);
+                drone.setAttribute('cy', post.y);
+                drone.setAttribute('r', 3);
                 drone.setAttribute('fill', '#666');
                 canvas.appendChild(drone);
-
+                
                 // Дроны летят прямо к текущему положению пешехода
                 drones.push({
                     element: drone,
-                    x: securityX,
-                    y: securityY,
+                    x: post.x,
+                    y: post.y,
                     targetPedestrian: pedestrian, // Ссылка на пешехода для преследования
-                    speed: 4, // Дроны быстрее машины
-                    arrived: false
+                    speed: 6, // Увеличиваем скорость дронов
+                    arrived: false,
+                    post: post
                 });
             }
         }
 
-        function launchPoliceCar(pedestrian) {
-            const securityX = 2340; // Координаты охраны
-            const securityY = 1390;
-
+        function launchPoliceCarFromPost(pedestrian, post) {
             const car = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             car.setAttribute('class', 'police-car');
-            car.setAttribute('x', securityX - 6);
-            car.setAttribute('y', securityY - 4);
-            car.setAttribute('width', 12);
-            car.setAttribute('height', 8);
+            car.setAttribute('x', post.x - 5);
+            car.setAttribute('y', post.y - 3);
+            car.setAttribute('width', 10);
+            car.setAttribute('height', 6);
             car.setAttribute('fill', 'blue');
             canvas.appendChild(car);
-
+            
             // Машина едет по дорогам к дому, где находится пешеход
             policeCars.push({
                 element: car,
-                x: securityX,
-                y: securityY,
+                x: post.x,
+                y: post.y,
                 targetPedestrian: pedestrian, // Ссылка на пешехода
-                speed: 2,
+                speed: 4, // Увеличиваем скорость машин
                 arrived: false,
-                path: generateRoadPath(securityX, securityY, pedestrian.targetX, pedestrian.targetY),
-                currentPathIndex: 0
+                path: generateRoadPath(post.x, post.y, pedestrian.targetX, pedestrian.targetY),
+                currentPathIndex: 0,
+                post: post
             });
         }
 
@@ -1327,53 +1528,50 @@
             // Двигаем дронов (прямо к текущему положению пешехода)
             drones.forEach((drone, index) => {
                 if (drone.arrived) return;
-
+                
                 const pedestrian = drone.targetPedestrian;
                 if (!pedestrian || pedestrian.caught) {
                     // Если пешеход уже пойман или удален, возвращаем дрона на базу
                     returnDroneToBase(drone, index);
                     return;
                 }
-
+                
                 const dx = pedestrian.x - drone.x;
                 const dy = pedestrian.y - drone.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-
+                
                 if (distance < drone.speed) {
                     // Дрон прибыл к пешеходу
                     drone.x = pedestrian.x;
                     drone.y = pedestrian.y;
                     drone.arrived = true;
-
-                    // Проверяем, все ли дроны прибыли
-                    checkPedestrianCaught(pedestrian);
                 } else {
                     const angle = Math.atan2(dy, dx);
                     drone.x += Math.cos(angle) * drone.speed;
                     drone.y += Math.sin(angle) * drone.speed;
                 }
-
+                
                 drone.element.setAttribute('cx', drone.x);
                 drone.element.setAttribute('cy', drone.y);
             });
-
+            
             // Двигаем полицейские машины (строго по дорогам)
             policeCars.forEach((car, index) => {
                 if (car.arrived) return;
-
+                
                 const pedestrian = car.targetPedestrian;
                 if (!pedestrian || pedestrian.caught) {
                     // Если пешеход уже пойман или удален, возвращаем машину на базу
                     returnCarToBase(car, index);
                     return;
                 }
-
+                
                 if (car.path.length > 0 && car.currentPathIndex < car.path.length) {
                     const nextPoint = car.path[car.currentPathIndex];
                     const dx = nextPoint.x - car.x;
                     const dy = nextPoint.y - car.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-
+                    
                     if (distance < car.speed) {
                         // Достигли точки пути
                         car.x = nextPoint.x;
@@ -1385,89 +1583,31 @@
                         car.x += Math.cos(angle) * car.speed;
                         car.y += Math.sin(angle) * car.speed;
                     }
-
-                    car.element.setAttribute('x', car.x - 6);
-                    car.element.setAttribute('y', car.y - 4);
-
+                    
+                    car.element.setAttribute('x', car.x - 5);
+                    car.element.setAttribute('y', car.y - 3);
+                    
                     // Проверяем, достигла ли машина конечной цели (дома пешехода)
                     const finalDistance = Math.sqrt(
-                        Math.pow(car.x - pedestrian.targetX, 2) +
+                        Math.pow(car.x - pedestrian.targetX, 2) + 
                         Math.pow(car.y - pedestrian.targetY, 2)
                     );
-
+                    
                     if (finalDistance < 20) {
                         car.arrived = true;
-                        checkPedestrianCaught(pedestrian);
                     }
                 }
             });
         }
 
-        function checkPedestrianCaught(pedestrian) {
-            // Проверяем, прибыли ли все дроны и машина
-            const dronesArrived = drones.filter(d =>
-                d.targetPedestrian === pedestrian && d.arrived
-            ).length;
-
-            const carsArrived = policeCars.filter(c =>
-                c.targetPedestrian === pedestrian && c.arrived
-            ).length;
-
-            // Если прибыли хотя бы один дрон и машина, считаем пешехода пойманным
-            if (dronesArrived >= 1 && carsArrived >= 1 && !pedestrian.caught) {
-                pedestrian.caught = true;
-
-                // Останавливаем пешехода
-                pedestrian.element.classList.add('caught');
-
-                // Через 3 секунды удаляем пешехода, дронов и машину
-                setTimeout(() => {
-                    // Удаляем пешехода
-                    const pedestrianIndex = pedestrians.indexOf(pedestrian);
-                    if (pedestrianIndex > -1) {
-                        canvas.removeChild(pedestrian.element);
-                        pedestrians.splice(pedestrianIndex, 1);
-                        pedestrianCount--;
-                        updatePedestrianCount();
-
-                        // Останавливаем мигание участка
-                        if (pedestrian.currentPlot) {
-                            pedestrian.currentPlot.classList.remove('blinking');
-                        }
-                    }
-
-                    // Удаляем дронов, связанных с этим пешеходом
-                    drones.forEach((drone, index) => {
-                        if (drone.targetPedestrian === pedestrian) {
-                            canvas.removeChild(drone.element);
-                            drones.splice(index, 1);
-                        }
-                    });
-
-                    // Удаляем машину, связанную с этим пешеходом
-                    policeCars.forEach((car, index) => {
-                        if (car.targetPedestrian === pedestrian) {
-                            canvas.removeChild(car.element);
-                            policeCars.splice(index, 1);
-                        }
-                    });
-
-                    // Сбрасываем тревогу, если больше нет обнаруженных пешеходов
-                    if (pedestrians.filter(p => p.detected && !p.caught).length === 0) {
-                        resetSecurityAlert();
-                    }
-                }, 3000);
-            }
-        }
-
         function returnDroneToBase(drone, index) {
-            const securityX = 2340;
-            const securityY = 1390;
-
+            const securityX = drone.post.x;
+            const securityY = drone.post.y;
+            
             const dx = securityX - drone.x;
             const dy = securityY - drone.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-
+            
             if (distance < drone.speed) {
                 canvas.removeChild(drone.element);
                 drones.splice(index, 1);
@@ -1477,28 +1617,28 @@
                 drone.y += Math.sin(angle) * drone.speed;
                 drone.element.setAttribute('cx', drone.x);
                 drone.element.setAttribute('cy', drone.y);
-
+                
                 // Продолжаем движение к базе
                 setTimeout(() => returnDroneToBase(drone, index), 50);
             }
         }
 
         function returnCarToBase(car, index) {
-            const securityX = 2340;
-            const securityY = 1390;
-
+            const securityX = car.post.x;
+            const securityY = car.post.y;
+            
             // Если нет пути, строим его
             if (!car.path || car.path.length === 0) {
                 car.path = generateRoadPath(car.x, car.y, securityX, securityY);
                 car.currentPathIndex = 0;
             }
-
+            
             if (car.path.length > 0 && car.currentPathIndex < car.path.length) {
                 const nextPoint = car.path[car.currentPathIndex];
                 const dx = nextPoint.x - car.x;
                 const dy = nextPoint.y - car.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-
+                
                 if (distance < car.speed) {
                     car.x = nextPoint.x;
                     car.y = nextPoint.y;
@@ -1508,10 +1648,10 @@
                     car.x += Math.cos(angle) * car.speed;
                     car.y += Math.sin(angle) * car.speed;
                 }
-
-                car.element.setAttribute('x', car.x - 6);
-                car.element.setAttribute('y', car.y - 4);
-
+                
+                car.element.setAttribute('x', car.x - 5);
+                car.element.setAttribute('y', car.y - 3);
+                
                 // Продолжаем движение к базе
                 setTimeout(() => returnCarToBase(car, index), 50);
             } else {
@@ -1535,14 +1675,14 @@
             pedestrianElements.forEach(pedestrian => {
                 pedestrian.style.display = pedestriansVisible ? 'block' : 'none';
             });
-
+            
             // Останавливаем мигание всех участков при выключении пешеходов
             if (!pedestriansVisible) {
                 const plots = document.querySelectorAll('.plot');
                 plots.forEach(plot => {
                     plot.classList.remove('blinking');
                 });
-
+                
                 // Удаляем всех пешеходов при выключении
                 pedestrians.forEach(pedestrian => {
                     canvas.removeChild(pedestrian.element);
@@ -1550,13 +1690,41 @@
                 pedestrians = [];
                 pedestrianCount = 0;
                 updatePedestrianCount();
-
+                
                 // Сбрасываем тревогу
                 resetSecurityAlert();
+            } else {
+                // Включаем пешеходов - создаем одного
+                if (pedestrians.length === 0) {
+                    spawnPedestrian();
+                }
             }
         }
 
-        // Перетаскивание карты
+        // Перетаскивание карты для мобильных устройств
+        container.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDragging = true;
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+            canvas.classList.add('dragging');
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            updateTransform();
+        });
+
+        container.addEventListener('touchend', () => {
+            isDragging = false;
+            canvas.classList.remove('dragging');
+        });
+
+        // Перетаскивание карты для десктопов
         container.addEventListener('mousedown', (e) => {
             isDragging = true;
             startX = e.clientX - translateX;
@@ -1580,6 +1748,50 @@
         container.addEventListener('mouseleave', () => {
             isDragging = false;
             canvas.classList.remove('dragging');
+        });
+
+        // Масштабирование для мобильных устройств (жест pinch-to-zoom)
+        let initialDistance = null;
+
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                initialDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialDistance !== null) {
+                e.preventDefault();
+                
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                
+                const delta = currentDistance / initialDistance;
+                initialDistance = currentDistance;
+                
+                const rect = container.getBoundingClientRect();
+                const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+                const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+                
+                const oldScale = scale;
+                scale = Math.max(0.2, Math.min(3, scale * delta));
+                
+                // Масштабирование относительно центра жеста
+                translateX = centerX - (centerX - translateX) * (scale / oldScale);
+                translateY = centerY - (centerY - translateY) * (scale / oldScale);
+                
+                updateTransform();
+            }
+        });
+
+        container.addEventListener('touchend', () => {
+            initialDistance = null;
         });
 
         // Масштабирование колесом мыши
@@ -1612,7 +1824,7 @@
         }
 
         function resetView() {
-            scale = 0.4;
+            scale = 0.3;
             const containerWidth = container.clientWidth;
             const containerHeight = container.clientHeight;
             const canvasWidth = 3000 * scale;
@@ -1622,10 +1834,6 @@
             translateY = (containerHeight - canvasHeight) / 2;
 
             updateTransform();
-        }
-
-        function toggleGrid() {
-            alert('Функция сетки временно недоступна');
         }
 
         // Адаптация при изменении размера окна
