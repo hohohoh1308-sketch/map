@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Карта поселка "Солнечный"</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Карта поселка</title>
     <style>
         :root {
             --color-background: #f5f5f5;
@@ -21,10 +20,8 @@
             --color-forest: #a5d6a7;
             --color-plot: rgba(255, 255, 255, 0.3);
             --color-plot-border: rgba(33, 128, 141, 0.4);
-            --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-
-        /* Адаптация под темную тему Telegram */
         @media (prefers-color-scheme: dark) {
             :root {
                 --color-background: #1f2121;
@@ -42,107 +39,85 @@
                 --color-plot-border: rgba(33, 128, 141, 0.3);
             }
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: var(--font-family-base);
             background-color: var(--color-background);
             color: var(--color-text);
             overflow: hidden;
-            height: 100vh;
-            /* Учитываем верхнюю панель Telegram */
-            padding-top: env(safe-area-inset-top);
         }
-
         .container {
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: 100vh;
         }
-
         .header {
             background-color: var(--color-surface);
-            padding: 8px 12px;
+            padding: 12px 16px;
             border-bottom: 1px solid var(--color-road-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 100;
-            flex-shrink: 0;
         }
-
         .title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--color-text);
         }
-
         .controls {
             display: flex;
-            gap: 6px;
+            gap: 8px;
         }
-
         .btn {
-            padding: 6px 12px;
+            padding: 8px 16px;
             background-color: var(--color-primary);
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 500;
             transition: opacity 0.2s;
         }
-
         .btn:hover {
             opacity: 0.9;
         }
-
         .btn-secondary {
             background-color: rgba(94, 82, 64, 0.12);
             color: var(--color-text);
         }
-
         .map-container {
             flex: 1;
             position: relative;
             overflow: hidden;
             background-color: var(--color-grass);
-            touch-action: none;
         }
-
         .map-canvas {
             position: absolute;
             top: 0;
             left: 0;
             cursor: grab;
             transform-origin: 0 0;
-            width: 3000px;
-            height: 3000px;
         }
-
         .map-canvas.dragging {
             cursor: grabbing;
         }
-
         .road {
             fill: var(--color-road);
             stroke: var(--color-road-border);
             stroke-width: 2;
         }
-
         .road-line {
             stroke: #ffd54f;
             stroke-width: 1;
             stroke-dasharray: 10, 10;
             fill: none;
         }
-
         .plot {
             fill: var(--color-plot);
             stroke: var(--color-plot-border);
@@ -150,111 +125,93 @@
             stroke-dasharray: 4, 4;
             transition: fill 0.3s ease;
         }
-
         .plot.blinking {
             animation: blink 1s infinite;
         }
-
         @keyframes blink {
             0% { fill: var(--color-plot); }
             50% { fill: rgba(255, 0, 0, 0.5); }
             100% { fill: var(--color-plot); }
         }
-
         .building {
             fill: var(--color-building);
             stroke: var(--color-building-border);
             stroke-width: 2;
         }
-
         .forest {
             fill: var(--color-forest);
             opacity: 0.7;
         }
-
         .water {
             fill: var(--color-water);
             opacity: 0.6;
         }
-
         .label {
             font-family: var(--font-family-base);
-            font-size: 10px;
+            font-size: 12px;
             fill: var(--color-text);
             pointer-events: none;
         }
-
         .label-small {
-            font-size: 8px;
+            font-size: 10px;
             fill: var(--color-text-secondary);
         }
-
         .camera {
             fill: black;
-            r: 3;
+            r: 4;
         }
-
         .camera-view {
             fill: rgba(255, 0, 0, 0.15);
             stroke: rgba(255, 0, 0, 0.6);
             stroke-width: 1.5;
         }
-
         .pedestrian {
             fill: red;
-            r: 2;
+            r: 6;
         }
-
-        .pedestrian.caught {
-            animation: caught-blink 0.5s infinite alternate;
+        .pedestrian.blinking {
+            animation: pedestrian-blink 0.5s infinite;
         }
-
-        @keyframes caught-blink {
-            0% { fill: red; r: 2; }
-            50% { fill: yellow; r: 3; }
-            100% { fill: red; r: 2; }
+        @keyframes pedestrian-blink {
+            0% { fill: red; }
+            50% { fill: yellow; }
+            100% { fill: red; }
         }
-
         .drone {
             fill: #666;
-            r: 3;
+            r: 8;
         }
-
         .police-car {
             fill: blue;
-            width: 10px;
-            height: 6px;
+            width: 24px;
+            height: 16px;
         }
-
         .alert {
             animation: alert-pulse 0.5s infinite alternate;
         }
-
         @keyframes alert-pulse {
             from { opacity: 1; }
             to { opacity: 0.5; }
         }
-
         .zoom-controls {
             position: absolute;
-            right: 12px;
-            bottom: 12px;
+            right: 16px;
+            bottom: 16px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             background-color: var(--color-surface);
-            padding: 6px;
-            border-radius: 6px;
+            padding: 8px;
+            border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
         .zoom-btn {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border: none;
             background-color: var(--color-primary);
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             border-radius: 6px;
             cursor: pointer;
             display: flex;
@@ -262,106 +219,54 @@
             justify-content: center;
             transition: opacity 0.2s;
         }
-
         .zoom-btn:hover {
             opacity: 0.9;
         }
-
         .legend {
             position: absolute;
-            left: 12px;
-            bottom: 12px;
+            left: 16px;
+            bottom: 16px;
             background-color: var(--color-surface);
-            padding: 10px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            font-size: 10px;
-            max-width: 150px;
+            font-size: 12px;
         }
-
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
+            gap: 8px;
+            margin-bottom: 6px;
         }
-
         .legend-item:last-child {
             margin-bottom: 0;
         }
-
         .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
             border: 1px solid var(--color-road-border);
         }
-
         .info-panel {
             position: absolute;
-            top: 12px;
-            left: 12px;
+            top: 16px;
+            left: 16px;
             background-color: var(--color-surface);
-            padding: 10px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            font-size: 11px;
-            max-width: 200px;
+            font-size: 13px;
+            max-width: 250px;
         }
-
         .info-panel strong {
             display: block;
             margin-bottom: 4px;
             color: var(--color-text);
         }
-
         .info-panel p {
-            margin: 3px 0;
+            margin: 4px 0;
             color: var(--color-text-secondary);
-            line-height: 1.3;
-        }
-
-        /* Стили для мобильных устройств */
-        @media (max-width: 768px) {
-            .header {
-                padding: 6px 10px;
-            }
-            
-            .title {
-                font-size: 14px;
-            }
-            
-            .btn {
-                padding: 5px 10px;
-                font-size: 11px;
-            }
-            
-            .zoom-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 16px;
-            }
-            
-            .info-panel, .legend {
-                font-size: 9px;
-            }
-        }
-
-        /* Стили для очень маленьких экранов */
-        @media (max-width: 480px) {
-            .controls {
-                flex-wrap: wrap;
-                justify-content: flex-end;
-            }
-            
-            .btn {
-                padding: 4px 8px;
-                font-size: 10px;
-            }
-            
-            .info-panel, .legend {
-                max-width: 140px;
-            }
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -370,448 +275,344 @@
         <div class="header">
             <div class="title">🗺️ Карта поселка "Солнечный"</div>
             <div class="controls">
-                <button class="btn btn-secondary" onclick="resetView()">Сброс</button>
+                <button class="btn btn-secondary" onclick="resetView()">Сбросить вид</button>
                 <button class="btn" onclick="toggleCameras()">Камеры</button>
                 <button class="btn" onclick="togglePedestrians()">Пешеходы</button>
             </div>
         </div>
-
         <div class="map-container" id="mapContainer">
             <svg class="map-canvas" id="mapCanvas" width="3000" height="3000">
                 <!-- Фон (трава) -->
                 <rect width="3000" height="3000" fill="var(--color-grass)"/>
-
                 <!-- Лесные массивы -->
                 <rect class="forest" x="50" y="50" width="400" height="300"/>
                 <rect class="forest" x="2550" y="2500" width="400" height="450"/>
                 <rect class="forest" x="100" y="2500" width="350" height="400"/>
                 <rect class="forest" x="2000" y="100" width="350" height="250"/>
                 <rect class="forest" x="500" y="2000" width="400" height="300"/>
-
                 <!-- Водоемы -->
                 <ellipse class="water" cx="2500" cy="400" rx="250" ry="180"/>
                 <ellipse class="water" cx="400" cy="2600" rx="180" ry="120"/>
                 <ellipse class="water" cx="1800" cy="1800" rx="150" ry="100"/>
-
                 <!-- Главные дороги (широкие) -->
                 <rect class="road" x="0" y="1200" width="3000" height="120"/>
                 <line class="road-line" x1="0" y1="1260" x2="3000" y2="1260"/>
-
                 <rect class="road" x="1400" y="0" width="120" height="3000"/>
                 <line class="road-line" x1="1460" y1="0" x2="1460" y2="3000"/>
-
                 <!-- Второстепенные дороги -->
                 <rect class="road" x="600" y="550" width="80" height="1800"/>
                 <line class="road-line" x1="640" y1="600" x2="640" y2="2400"/>
-
                 <rect class="road" x="2200" y="600" width="80" height="1800"/>
                 <line class="road-line" x1="2240" y1="600" x2="2240" y2="2400"/>
-
                 <rect class="road" x="600" y="700" width="800" height="80"/>
                 <line class="road-line" x1="600" y1="740" x2="1400" y2="740"/>
-
                 <rect class="road" x="1400" y="1700" width="800" height="80"/>
                 <line class="road-line" x1="1400" y1="1740" x2="2200" y2="1740"/>
-
                 <!-- Горизонтальные дороги в новых кварталах -->
                 <rect class="road" x="160" y="300" width="600" height="60"/>
                 <line class="road-line" x1="200" y1="330" x2="800" y2="330"/>
-
                 <rect class="road" x="160" y="500" width="600" height="60"/>
                 <line class="road-line" x1="200" y1="530" x2="800" y2="530"/>
-
                 <rect class="road" x="1520" y="300" width="600" height="60"/>
                 <line class="road-line" x1="1600" y1="330" x2="2200" y2="330"/>
-
                 <rect class="road" x="1520" y="500" width="600" height="60"/>
                 <line class="road-line" x1="1600" y1="530" x2="2200" y2="530"/>
-
                 <!-- Вертикальные дороги в новых кварталах -->
                 <rect class="road" x="300" y="300" width="60" height="260"/>
                 <line class="road-line" x1="330" y1="300" x2="330" y2="600"/>
-
                 <rect class="road" x="500" y="300" width="60" height="260"/>
                 <line class="road-line" x1="530" y1="300" x2="530" y2="600"/>
-
                 <rect class="road" x="700" y="300" width="60" height="260"/>
                 <line class="road-line" x1="730" y1="300" x2="730" y2="600"/>
-
                 <rect class="road" x="1700" y="300" width="60" height="260"/>
                 <line class="road-line" x1="1730" y1="300" x2="1730" y2="600"/>
-
                 <rect class="road" x="1900" y="300" width="60" height="260"/>
                 <line class="road-line" x1="1930" y1="300" x2="1930" y2="600"/>
-
                 <rect class="road" x="2100" y="300" width="70" height="260"/>
                 <line class="road-line" x1="2130" y1="300" x2="2130" y2="600"/>
-
                 <!-- КВАРТАЛ 1 (Верхний левый) -->
                 <!-- Ряд 1 -->
                 <rect class="plot" id="plot1" x="180" y="370" width="120" height="120"/>
                 <rect class="building" x="220" y="380" width="70" height="100"/>
                 <text class="label-small" x="255" y="400" text-anchor="middle">Дом 1</text>
-
                 <rect class="plot" id="plot2" x="180" y="120" width="190" height="120"/>
                 <rect class="building" x="200" y="120" width="70" height="100"/>
                 <text class="label-small" x="250" y="200" text-anchor="middle">Дом 2</text>
-
                 <rect class="plot" id="plot3" x="390" y="120" width="120" height="120"/>
-                <rect class="building" x="420" y="120" width="70, height="100"/>
+                <rect class="building" x="420" y="120" width="70" height="100"/>
                 <text class="label-small" x="440" y="220" text-anchor="middle">Дом 3</text>
-
                 <rect class="plot" id="plot4" x="560" y="360" width="140" height="140"/>
                 <rect class="building" x="600" y="400" width="70" height="100"/>
                 <text class="label-small" x="600" y="410" text-anchor="middle">Дом 4</text>
-
                 <rect class="plot" id="plot5" x="540" y="120" width="200" height="120"/>
                 <rect class="building" x="580" y="120" width="70" height="100"/>
                 <text class="label-small" x="600" y="200" text-anchor="middle">Дом 5</text>
-
                 <!-- Ряд 2 -->
                 <rect class="plot" id="plot6" x="160" y="600" width="140" height="150"/>
                 <rect class="building" x="220" y="600" width="70" height="100"/>
                 <text class="label-small" x="255" y="640" text-anchor="middle">Дом 6</text>
-
                 <rect class="plot" id="plot7" x="360" y="600" width="140" height="140"/>
                 <rect class="building" x="390" y="600" width="70" height="100"/>
                 <text class="label-small" x="420" y="620" text-anchor="middle">Дом 7</text>
-
                 <rect class="plot" id="plot8" x="360" y="380" width="110" height="120"/>
                 <rect class="building" x="360" y="380" width="70" height="100"/>
                 <text class="label-small" x="420" y="400" text-anchor="middle">Дом 8</text>
-
                 <rect class="plot" id="plot9" x="760" y="560" width="110" height="140"/>
                 <rect class="building" x="770" y="570" width="70" height="100"/>
                 <text class="label-small" x="800" y="600" text-anchor="middle">Дом 9</text>
-
                 <rect class="plot" id="plot10" x="760" y="400" width="110" height="140"/>
                 <rect class="building" x="760" y="400" width="70" height="100"/>
                 <text class="label-small" x="780" y="400" text-anchor="middle">Дом 10</text>
-
                 <!-- КВАРТАЛ 2 (Верхний правый) -->
                 <!-- Ряд 1 -->
                 <rect class="plot" id="plot11" x="1610" y="180" width="90" height="120"/>
                 <rect class="building" x="1620" y="190" width="70" height="100"/>
                 <text class="label-small" x="1640" y="210" text-anchor="middle">Дом 11</text>
-
                 <rect class="plot" id="plot12" x="1730" y="180" width="90" height="120"/>
                 <rect class="building" x="1740" y="190" width="70" height="100"/>
                 <text class="label-small" x="1770" y="210" text-anchor="middle">Дом 12</text>
-
                 <rect class="plot" id="plot13" x="1850" y="180" width="90" height="120"/>
                 <rect class="building" x="1860" y="190" width="70" height="100"/>
                 <text class="label-small" x="1890" y="210" text-anchor="middle">Дом 13</text>
-
                 <rect class="plot" id="plot14" x="1970" y="180" width="90" height="120"/>
                 <rect class="building" x="1980" y="190" width="70" height="100"/>
                 <text class="label-small" x="2010" y="210" text-anchor="middle">Дом 14</text>
-
                 <rect class="plot" id="plot15" x="2090" y="180" width="90" height="120"/>
                 <rect class="building" x="2100" y="190" width="70" height="100"/>
                 <text class="label-small" x="2130" y="210" text-anchor="middle">Дом 15</text>
-
                 <!-- Ряд 2 -->
                 <rect class="plot" id="plot16" x="1580" y="370" width="110" height="120"/>
                 <rect class="building" x="1610" y="380" width="70" height="100"/>
                 <text class="label-small" x="1630" y="400" text-anchor="middle">Дом 16</text>
-
                 <rect class="plot" id="plot17" x="1770" y="560" width="130" height="120"/>
                 <rect class="building" x="1790" y="570" width="70" height="100"/>
                 <text class="label-small" x="1810" y="590" text-anchor="middle">Дом 17</text>
-
                 <rect class="plot" id="plot18" x="1770" y="370" width="120" height="120"/>
                 <rect class="building" x="1790" y="380" width="70" height="100"/>
                 <text class="label-small" x="1810" y="400" text-anchor="middle">Дом 18</text>
-
                 <rect class="plot" id="plot19" x="1980" y="370" width="100" height="120"/>
                 <rect class="building" x="1990" y="380" width="70" height="100"/>
                 <text class="label-small" x="2020" y="400" text-anchor="middle">Дом 19</text>
-
                 <rect class="plot" id="plot20" x="2010" y="1330" width="140" height="160"/>
                 <rect class="building" x="2020" y="1340" width="70" height="100"/>
                 <text class="label-small" x="2050" y="1360" text-anchor="middle">Дом 20</text>
-
                 <!-- КВАРТАЛ 3 (Центральный левый) -->
                 <rect class="plot" id="plot21" x="680" y="790" width="170" height="170"/>
                 <rect class="building" x="700" y="800" width="80" height="120"/>
                 <text class="label-small" x="730" y="870" text-anchor="middle">Дом 21</text>
-
                 <rect class="plot" id="plot22" x="860" y="790" width="170" height="170"/>
                 <rect class="building" x="880" y="800" width="80" height="120"/>
                 <text class="label-small" x="910" y="870" text-anchor="middle">Дом 22</text>
-
                 <rect class="plot" id="plot23" x="1040" y="790" width="170" height="170"/>
                 <rect class="building" x="1060" y="800" width="80" height="120"/>
                 <text class="label-small" x="1090" y="870" text-anchor="middle">Дом 23</text>
-
                 <rect class="plot" id="plot24" x="1220" y="790" width="170" height="170"/>
                 <rect class="building" x="1250" y="800" width="80" height="120"/>
                 <text class="label-small" x="1280" y="870" text-anchor="middle">Дом 24</text>
-
                 <rect class="plot" id="plot25" x="680" y="1000" width="170" height="170"/>
                 <rect class="building" x="700" y="1040" width="80" height="120"/>
                 <text class="label-small" x="740" y="1060" text-anchor="middle">Дом 25</text>
-
                 <rect class="plot" id="plot26" x="860" y="1000" width="170" height="170"/>
                 <rect class="building" x="880" y="1040" width="80" height="120"/>
                 <text class="label-small" x="920" y="1060" text-anchor="middle">Дом 26</text>
-
                 <rect class="plot" id="plot27" x="1040" y="1000" width="170" height="170"/>
                 <rect class="building" x="1060" y="1040" width="80" height="120"/>
                 <text class="label-small" x="1100" y="1060" text-anchor="middle">Дом 27</text>
-
                 <rect class="plot" id="plot28" x="1220" y="1000" width="170" height="170"/>
                 <rect class="building" x="1250" y="1040" width="80" height="120"/>
                 <text class="label-small" x="1290" y="1060" text-anchor="middle">Дом 28</text>
-
                 <!-- КВАРТАЛ 4 (Центральный правый) -->
                 <rect class="plot" id="plot29" x="1520" y="640" width="190" height="170"/>
                 <rect class="building" x="1540" y="670" width="120" height="80"/>
                 <text class="label-small" x="1560" y="700" text-anchor="middle">Дом 29</text>
-
                 <rect class="plot" id="plot30" x="1520" y="840" width="190" height="170"/>
                 <rect class="building" x="1540" y="870" width="120" height="80"/>
                 <text class="label-small" x="1560" y="900" text-anchor="middle">Дом 30</text>
-
                 <rect class="plot" id="plot31" x="1520" y="1030" width="190" height="170"/>
                 <rect class="building" x="1540" y="1060" width="120" height="80"/>
                 <text class="label-small" x="1560" y="1070" text-anchor="middle">Дом 31</text>
-
                 <rect class="plot" id="plot32" x="2300" y="700" width="250" height="200"/>
                 <rect class="building" x="2350" y="750" width="80" height="120"/>
                 <text class="label-small" x="2390" y="770" text-anchor="middle">Дом 32</text>
-
                 <rect class="plot" id="plot33" x="2300" y="970" width="250" height="200"/>
                 <rect class="building" x="2350" y="1000" width="80" height="120"/>
                 <text class="label-small" x="2390" y="1030" text-anchor="middle">Дом 33</text>
-
                 <rect class="plot" id="plot34" x="2030" y="650" width="160" height="160"/>
                 <rect class="building" x="2040" y="670" width="80" height="120"/>
                 <text class="label-small" x="2060" y="690" text-anchor="middle">Дом 34</text>
-
                 <rect class="plot" id="plot35" x="1730" y="1030" width="190" height="170"/>
                 <rect class="building" x="1750" y="1060" width="80" height="120"/>
                 <text class="label-small" x="1770" y="1090" text-anchor="middle">Дом 35</text>
-
                 <rect class="plot" id="plot36" x="1930" y="1030" width="190" height="170"/>
                 <rect class="building" x="1960" y="1060" width="80" height="120"/>
                 <text class="label-small" x="1990" y="1090" text-anchor="middle">Дом 36</text>
-
                 <rect class="plot" id="plot37" x="2010" y="820" width="190" height="200"/>
                 <rect class="building" x="2070" y="840" width="80" height="120"/>
                 <text class="label-small" x="2090" y="860" text-anchor="middle">Дом 37</text>
-
                 <!-- КВАРТАЛ 5 (Нижний левый) -->
                 <!-- Ряд 1 -->
-
                 <rect class="plot" id="plot41" x="840" y="1330" width="170" height="170"/>
                 <rect class="building" x="870" y="1360" width="70" height="100"/>
                 <text class="label-small" x="900" y="1380" text-anchor="middle">Дом 41</text>
-
                 <rect class="plot" id="plot42" x="1220" y="1330" width="160" height="170"/>
                 <rect class="building" x="1250" y="1360" width="70" height="100"/>
                 <text class="label-small" x="1280" y="1380" text-anchor="middle">Дом 42</text>
-
                 <!-- Ряд 2 -->
                 <rect class="plot" id="plot43" x="1040" y="1330" width="160" height="170"/>
                 <rect class="building" x="1060" y="1360" width="70" height="100"/>
                 <text class="label-small" x="1090" y="1380" text-anchor="middle">Дом 43</text>
-
                 <!-- КВАРТАЛ 6 (Нижний правый) -->
                 <!-- Ряд 1 -->
                 <rect class="plot" id="plot48" x="1610" y="1330" width="150" height="160"/>
                 <rect class="building" x="1620" y="1350" width="70" height="100"/>
                 <text class="label-small" x="1650" y="1370" text-anchor="middle">Дом 48</text>
-
                 <rect class="plot" id="plot50" x="1810" y="1330" width="150" height="160"/>
                 <rect class="building" x="1820" y="1350" width="70" height="100"/>
                 <text class="label-small" x="1850" y="1370" text-anchor="middle">Дом 50</text>
-
                 <!-- Общественные здания -->
                 <rect class="plot" id="plot-school" x="1090" y="290" width="300" height="350"/>
                 <rect class="building" x="1190" y="300" width="150" height="150" fill="#ffccbc"/>
                 <text class="label" x="1230" y="350" text-anchor="middle" font-weight="600">Школа</text>
-
                 <!-- Заменяем магазин на второй пункт охраны -->
                 <rect class="plot" id="plot-security2" x="460" y="850" width="140" height="120"/>
                 <rect class="building" x="460" y="850" width="120" height="100" fill="#ffecb3"/>
                 <text class="label" x="500" y="870" text-anchor="middle" font-weight="600">Охрана 2</text>
-                
                 <rect class="plot" id="plot-security1" x="2290" y="1330" width="120" height="120"/>
                 <rect class="building" x="2300" y="1340" width="100" height="100" fill="#ffecb3"/>
                 <text class="label" x="2340" y="1370" text-anchor="middle" font-weight="600">Охрана 1</text>
-
                 <rect class="plot" id="plot-cafe" x="1770" y="1500" width="140" height="120"/>
                 <rect class="building" x="1780" y="1510" width="120" height="100" fill="#d7ccc8"/>
                 <text class="label" x="1800" y="1530" text-anchor="middle" font-weight="600">Кафе</text>
-
                 <!-- Камеры наблюдения с конусами обзора -->
-                <!-- Главные перекрестки -->
+                <!-- Все конусы теперь статичны и правильно привязаны к позиции камеры -->
                 <g class="camera-group">
                     <circle class="camera" cx="1460" cy="1260"/>
                     <path class="camera-view" d="M1460,1260 L1440,1200 L1480,1200 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2870" cy="1260"/>
-                    <path class="camera-view" d="M640,1260 L620,1200 L660,1200 Z"/>
+                    <path class="camera-view" d="M2870,1260 L2850,1200 L2890,1200 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2240" cy="1260"/>
                     <path class="camera-view" d="M2240,1260 L2220,1200 L2260,1200 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="640" cy="740"/>
                     <path class="camera-view" d="M640,740 L620,680 L660,680 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2240" cy="1740"/>
                     <path class="camera-view" d="M2240,1740 L2220,1680 L2260,1680 Z"/>
                 </g>
-
-                <!-- Верхний левый квартал -->
                 <g class="camera-group">
                     <circle class="camera" cx="100" cy="330"/>
-                    <path class="camera-view" d="M330,330 L310,270 L350,270 Z"/>
+                    <path class="camera-view" d="M100,330 L80,270 L120,270 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="530" cy="330"/>
                     <path class="camera-view" d="M530,330 L510,270 L550,270 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="730" cy="330"/>
                     <path class="camera-view" d="M730,330 L710,270 L750,270 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="100" cy="530"/>
-                    <path class="camera-view" d="M200,530 L180,470 L220,470 Z"/>
+                    <path class="camera-view" d="M100,530 L80,470 L120,470 Z"/>
                 </g>
-
-                <!-- Верхний правый квартал -->
                 <g class="camera-group">
                     <circle class="camera" cx="1500" cy="330"/>
-                    <path class="camera-view" d="M1730,330 L1710,270 L1750,270 Z"/>
+                    <path class="camera-view" d="M1500,330 L1480,270 L1520,270 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1930" cy="80"/>
-                    <path class="camera-view" d="M1930,330 L1910,270 L1950,270 Z"/>
+                    <path class="camera-view" d="M1930,80 L1910,20 L1950,20 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2170" cy="400"/>
-                    <path class="camera-view" d="M2130,330 L2110,270 L2150,270 Z"/>
+                    <path class="camera-view" d="M2170,400 L2150,340 L2190,340 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1500" cy="530"/>
-                    <path class="camera-view" d="M1600,530 L1580,470 L1620,470 Z"/>
+                    <path class="camera-view" d="M1500,530 L1480,470 L1520,470 Z"/>
                 </g>
-
-                <!-- Центральные кварталы -->
                 <g class="camera-group">
                     <circle class="camera" cx="200" cy="1250"/>
-                    <path class="camera-view" d="M640,870 L620,810 L660,810 Z"/>
+                    <path class="camera-view" d="M200,1250 L180,1190 L220,1190 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="580" cy="1070"/>
-                    <path class="camera-view" d="M640,1070 L620,1010 L660,1010 Z"/>
+                    <path class="camera-view" d="M580,1070 L560,1010 L600,1010 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1860" cy="870"/>
-                    <path class="camera-view" d="M1460,870 L1440,810 L1480,810 Z"/>
+                    <path class="camera-view" d="M1860,870 L1840,810 L1880,810 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1460" cy="2800"/>
-                    <path class="camera-view" d="M1460,1070 L1440,1010 L1480,1010 Z"/>
+                    <path class="camera-view" d="M1460,2800 L1440,2740 L1480,2740 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2740" cy="870"/>
-                    <path class="camera-view" d="M2240,870 L2220,810 L2260,810 Z"/>
+                    <path class="camera-view" d="M2740,870 L2720,810 L2760,810 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1040" cy="1620"/>
-                    <path class="camera-view" d="M2240,1070 L2220,1010 L2260,1010 Z"/>
+                    <path class="camera-view" d="M1040,1620 L1020,1560 L1060,1560 Z"/>
                 </g>
-
-                <!-- Нижние кварталы -->
                 <g class="camera-group">
                     <circle class="camera" cx="640" cy="1330"/>
                     <path class="camera-view" d="M640,1330 L620,1270 L660,1270 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1460" cy="1330"/>
                     <path class="camera-view" d="M1460,1330 L1440,1270 L1480,1270 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1460" cy="1740"/>
                     <path class="camera-view" d="M1460,1740 L1440,1680 L1480,1680 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2240" cy="1330"/>
                     <path class="camera-view" d="M2240,1330 L2220,1270 L2260,1270 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2240" cy="1740"/>
                     <path class="camera-view" d="M2240,1740 L2220,1680 L2260,1680 Z"/>
                 </g>
-
-                <!-- Дополнительные камеры на второстепенных дорогах -->
                 <g class="camera-group">
                     <circle class="camera" cx="640" cy="600"/>
                     <path class="camera-view" d="M640,600 L620,540 L660,540 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="640" cy="2400"/>
                     <path class="camera-view" d="M640,2400 L620,2340 L660,2340 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2240" cy="600"/>
                     <path class="camera-view" d="M2240,600 L2220,540 L2260,540 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2240" cy="2400"/>
                     <path class="camera-view" d="M2240,2400 L2220,2340 L2260,2340 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="600" cy="740"/>
                     <path class="camera-view" d="M600,740 L580,680 L620,680 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1400" cy="740"/>
                     <path class="camera-view" d="M1400,740 L1380,680 L1420,680 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="1400" cy="1740"/>
                     <path class="camera-view" d="M1400,1740 L1380,1680 L1420,1680 Z"/>
                 </g>
-
                 <g class="camera-group">
                     <circle class="camera" cx="2200" cy="1740"/>
                     <path class="camera-view" d="M2200,1740 L2180,1680 L2220,1680 Z"/>
                 </g>
-
                 <!-- Названия улиц -->
                 <text class="label" x="1460" y="950" text-anchor="middle" font-weight="600" font-size="14">ул. Центральная</text>
                 <text class="label" x="1010" y="1260" text-anchor="middle" font-weight="600" font-size="14">ул. Главная</text>
@@ -822,7 +623,6 @@
                 <text class="label" x="1860" y="1730" text-anchor="middle" font-weight="600" font-size="12">ул. Парковая</text>
                 <text class="label" x="1010" y="740" text-anchor="middle" font-weight="600" font-size="12">ул. Спортивная</text>
             </svg>
-
             <div class="info-panel">
                 <strong>🏘️ Поселок "Солнечный"</strong>
                 <p>Население: ~89 человек</p>
@@ -831,61 +631,12 @@
                 <p id="pedestrianCount">Пешеходов: 0/1</p>
                 <p id="alertStatus">Статус: Норма</p>
             </div>
-
-            <div class="zoom-controls">
-                <button class="zoom-btn" onclick="zoomIn()">+</button>
-                <button class="zoom-btn" onclick="zoomOut()">-</button>
-            </div>
-
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--color-building);"></div>
-                    <span>Жилые дома</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--color-forest);"></div>
-                    <span>Лесные массивы</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--color-water);"></div>
-                    <span>Водоемы</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--color-plot); border: 1px dashed var(--color-plot-border);"></div>
-                    <span>Участки</span>
-                </div>
-            </div>
         </div>
     </div>
-
     <script>
-        // Инициализация Telegram Web App
-        let tg = window.Telegram.WebApp;
-        
-        // Расширяем приложение на весь экран
-        tg.expand();
-        
-        // Настройка цветовой схемы в соответствии с Telegram
-        if (tg.colorScheme === 'dark') {
-            document.documentElement.style.setProperty('--color-background', '#1f2121');
-            document.documentElement.style.setProperty('--color-surface', '#262828');
-            document.documentElement.style.setProperty('--color-text', '#f5f5f5');
-            document.documentElement.style.setProperty('--color-text-secondary', '#a7a9a9');
-            document.documentElement.style.setProperty('--color-road', '#3a3c3c');
-            document.documentElement.style.setProperty('--color-road-border', '#4a4c4c');
-            document.documentElement.style.setProperty('--color-grass', '#2d4a2e');
-            document.documentElement.style.setProperty('--color-building', '#2a3a4a');
-            document.documentElement.style.setProperty('--color-building-border', '#3a5a7a');
-            document.documentElement.style.setProperty('--color-water', '#1a3a5a');
-            document.documentElement.style.setProperty('--color-forest', '#254a2a');
-            document.documentElement.style.setProperty('--color-plot', 'rgba(255, 255, 255, 0.1)');
-            document.documentElement.style.setProperty('--color-plot-border', 'rgba(33, 128, 141, 0.3)');
-        }
-
         const canvas = document.getElementById('mapCanvas');
         const container = document.getElementById('mapContainer');
-
-        let scale = 0.3; // Уменьшенный начальный масштаб для мобильных устройств
+        let scale = 0.4;
         let translateX = 0;
         let translateY = 0;
         let isDragging = false;
@@ -896,139 +647,109 @@
         let drones = [];
         let policeCars = [];
         let pedestrianCount = 0;
-        const maxPedestrians = 1; // Теперь только 1 красная точка
+        const maxPedestrians = 1;
         let alertMode = false;
-
+        let nextPedestrianTimeout = null;
+        let alertTimeout = null;
         // Координаты пунктов охраны
         const securityPosts = [
-            {x: 2340, y: 1390, name: "Охрана 1"}, // Первый пункт
-            {x: 520, y: 910, name: "Охрана 2"}    // Второй пункт (бывший магазин)
+            {x: 2340, y: 1390, name: "Охрана 1"},
+            {x: 520, y: 910, name: "Охрана 2"}
         ];
-
         // Определим сетку дорог для навигации
         const roadNetwork = {
             // Главные горизонтальные дороги
             horizontal: [
-                {y: 1260, xStart: 0, xEnd: 3000}, // Главная дорога
-                {y: 330, xStart: 160, xEnd: 760}, // Верхняя левая
+                {y: 1260, xStart: 0, xEnd: 3000},
+                {y: 330, xStart: 160, xEnd: 760},
                 {y: 530, xStart: 160, xEnd: 760},
-                {y: 330, xStart: 1520, xEnd: 2120}, // Верхняя правая
+                {y: 330, xStart: 1520, xEnd: 2120},
                 {y: 530, xStart: 1520, xEnd: 2120},
-                {y: 740, xStart: 600, xEnd: 1400}, // Центральные
+                {y: 740, xStart: 600, xEnd: 1400},
                 {y: 1740, xStart: 1400, xEnd: 2200}
             ],
             // Главные вертикальные дороги
             vertical: [
-                {x: 1460, yStart: 0, yEnd: 3000}, // Центральная дорога
-                {x: 640, yStart: 550, yEnd: 2350}, // Левая второстепенная
-                {x: 2240, yStart: 600, yEnd: 2400}, // Правая второстепенная
-                {x: 330, yStart: 300, yEnd: 560}, // Верхний левый квартал
+                {x: 1460, yStart: 0, yEnd: 3000},
+                {x: 640, yStart: 550, yEnd: 2350},
+                {x: 2240, yStart: 600, yEnd: 2400},
+                {x: 330, yStart: 300, yEnd: 560},
                 {x: 530, yStart: 300, yEnd: 560},
                 {x: 730, yStart: 300, yEnd: 560},
-                {x: 1730, yStart: 300, yEnd: 560}, // Верхний правый квартал
+                {x: 1730, yStart: 300, yEnd: 560},
                 {x: 1930, yStart: 300, yEnd: 560},
                 {x: 2130, yStart: 300, yEnd: 560}
             ]
         };
-
         // Центрируем карту при загрузке
         window.addEventListener('load', () => {
             const containerWidth = container.clientWidth;
             const containerHeight = container.clientHeight;
             const canvasWidth = 3000 * scale;
             const canvasHeight = 3000 * scale;
-
             translateX = (containerWidth - canvasWidth) / 2;
             translateY = (containerHeight - canvasHeight) / 2;
-
             updateTransform();
-            startCameraAnimation();
+            startCameraAnimation(); // Исправлено: теперь статичная инициализация
             startPedestrianSpawning();
             startSecuritySystem();
         });
-
         function updateTransform() {
             canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
-
-        // Функция для создания конуса обзора
-        function createConePath(cx, cy, radius, angle, rotation) {
-            const startAngle = (rotation - angle/2) * Math.PI / 180;
-            const endAngle = (rotation + angle/2) * Math.PI / 180;
-
-            const x1 = cx + radius * Math.cos(startAngle);
-            const y1 = cy + radius * Math.sin(startAngle);
-            const x2 = cx + radius * Math.cos(endAngle);
-            const y2 = cy + radius * Math.sin(endAngle);
-
-            return `M ${cx},${cy} L ${x1},${y1} A ${radius},${radius} 0 0,1 ${x2},${y2} Z`;
-        }
-
-        // Анимация вращения камер с конусами обзора
+        // СТАТИЧНАЯ ИНИЦИАЛИЗАЦИЯ КОНУСОВ ОБЗОРА (БЕЗ АНИМАЦИИ)
         function startCameraAnimation() {
             const cameraGroups = document.querySelectorAll('.camera-group');
-            cameraGroups.forEach((group, index) => {
-                const view = group.querySelector('.camera-view');
+            cameraGroups.forEach(group => {
                 const camera = group.querySelector('.camera');
+                const view = group.querySelector('.camera-view');
                 const cx = parseFloat(camera.getAttribute('cx'));
                 const cy = parseFloat(camera.getAttribute('cy'));
-                const radius = 90; // длина обзора
-                const angle = 80; // угол обзора в градусах
-
-                // Разные скорости вращения для более естественного вида
-                const speed = 0.2 + Math.random() * 0.3;
-                let rotation = Math.random() * 360; // начальный угол
-
-                function animate() {
-                    rotation += speed;
-                    if (rotation >= 360) rotation = 0;
-
-                    const pathData = createConePath(cx, cy, radius, angle, rotation);
-                    view.setAttribute('d', pathData);
-
-                    requestAnimationFrame(animate);
-                }
-
-                animate();
+                // Статичный конус: направлен вверх на 60px, ширина основания 40px
+                const x1 = cx - 20;
+                const y1 = cy - 60;
+                const x2 = cx + 20;
+                const y2 = cy - 60;
+                view.setAttribute('d', `M ${cx},${cy} L ${x1},${y1} L ${x2},${y2} Z`);
             });
         }
-
-        // Система пешеходов
+        // Система пешеходов (осталась без изменений)
         function startPedestrianSpawning() {
-            // Создаем только одного пешехода
-            if (pedestriansVisible && pedestrians.length < maxPedestrians) {
-                spawnPedestrian();
-            }
-
-            // Анимируем пешеходов
+            setTimeout(() => {
+                if (pedestriansVisible && pedestrians.length < maxPedestrians) {
+                    spawnPedestrian();
+                }
+            }, 3000);
             setInterval(movePedestrians, 50);
-            
-            // Проверяем пересечение с участками
             setInterval(checkPlotIntersections, 100);
-            
-            // Проверяем встречу с дронами и машинами
             setInterval(checkSecurityUnitIntersections, 100);
         }
-
+        function scheduleNextPedestrian() {
+            if (nextPedestrianTimeout) {
+                clearTimeout(nextPedestrianTimeout);
+            }
+            const fixedTime = 3000;
+            nextPedestrianTimeout = setTimeout(() => {
+                if (pedestriansVisible && pedestrians.length < maxPedestrians) {
+                    spawnPedestrian();
+                }
+            }, fixedTime);
+        }
         function spawnPedestrian() {
-            const spawnPoint = getRandomRoadPoint();
+            const spawnPoint = getSpawnPointNearVillage();
             const targetHouse = getRandomHouse();
-            
             const pedestrian = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             pedestrian.setAttribute('class', 'pedestrian');
             pedestrian.setAttribute('cx', spawnPoint.x);
             pedestrian.setAttribute('cy', spawnPoint.y);
-            pedestrian.setAttribute('r', 2);
-            
+            pedestrian.setAttribute('r', 6);
             canvas.appendChild(pedestrian);
-            
             const speed = 1 + Math.random() * 2;
-            
             pedestrians.push({
                 element: pedestrian,
                 x: spawnPoint.x,
                 y: spawnPoint.y,
-                startX: spawnPoint.x, // Запоминаем стартовую точку
+                startX: spawnPoint.x,
                 startY: spawnPoint.y,
                 targetX: targetHouse.x,
                 targetY: targetHouse.y,
@@ -1038,35 +759,22 @@
                 currentPathIndex: 0,
                 detected: false,
                 caught: false,
-                returning: false // Флаг для возвращения
+                returning: false,
+                blinking: false,
+                stopped: false
             });
-            
             pedestrianCount++;
             updatePedestrianCount();
         }
-
-        function getRandomRoadPoint() {
-            // Собираем все возможные точки на дорогах
-            const roadPoints = [];
-            
-            // Добавляем точки с горизонтальных дорог
-            roadNetwork.horizontal.forEach(road => {
-                for (let x = road.xStart; x <= road.xEnd; x += 50) {
-                    roadPoints.push({x: x, y: road.y});
-                }
-            });
-            
-            // Добавляем точки с вертикальных дорог
-            roadNetwork.vertical.forEach(road => {
-                for (let y = road.yStart; y <= road.yEnd; y += 50) {
-                    roadPoints.push({x: road.x, y: y});
-                }
-            });
-            
-            // Возвращаем случайную точку
-            return roadPoints[Math.floor(Math.random() * roadPoints.length)];
+        function getSpawnPointNearVillage() {
+            const spawnPoints = [
+                {x: -50, y: 1260},   // слева
+                {x: 3050, y: 1260},  // справа
+                {x: 1460, y: -50},   // сверху
+                {x: 1460, y: 3050}   // снизу
+            ];
+            return spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
         }
-
         function getRandomHouse() {
             const houses = [
                 {x: 240, y: 430}, {x: 235, y: 170}, {x: 455, y: 170},
@@ -1084,55 +792,36 @@
                 {x: 2110, y: 900}, {x: 925, y: 1430}, {x: 1300, y: 1430},
                 {x: 1125, y: 1430}, {x: 1685, y: 1410}, {x: 1885, y: 1410}
             ];
-            
             return houses[Math.floor(Math.random() * houses.length)];
         }
-
         function generateRoadPath(startX, startY, targetX, targetY) {
             const path = [];
-            
-            // Находим ближайшую дорогу к цели
             const closestRoadPoint = findClosestRoadPoint(targetX, targetY);
-            
-            // Если стартовая точка не на дороге, сначала идем к ближайшей дороге
             if (!isOnRoad(startX, startY)) {
                 const closestStartRoad = findClosestRoadPoint(startX, startY);
                 path.push(closestStartRoad);
             }
-            
-            // Находим путь по дорогам от текущей позиции до ближайшей к цели дороги
             const roadPath = findRoadPath(startX, startY, closestRoadPoint.x, closestRoadPoint.y);
             path.push(...roadPath);
-            
-            // Добавляем конечную точку (близко к дому)
             path.push({x: targetX, y: targetY});
-            
             return path;
         }
-
         function isOnRoad(x, y) {
-            // Проверяем горизонтальные дороги
             for (const road of roadNetwork.horizontal) {
                 if (Math.abs(y - road.y) < 10 && x >= road.xStart && x <= road.xEnd) {
                     return true;
                 }
             }
-            
-            // Проверяем вертикальные дороги
             for (const road of roadNetwork.vertical) {
                 if (Math.abs(x - road.x) < 10 && y >= road.yStart && y <= road.yEnd) {
                     return true;
                 }
             }
-            
             return false;
         }
-
         function findClosestRoadPoint(x, y) {
             let closestPoint = null;
             let minDistance = Infinity;
-            
-            // Проверяем горизонтальные дороги
             roadNetwork.horizontal.forEach(road => {
                 const distance = Math.abs(y - road.y);
                 if (distance < minDistance) {
@@ -1140,8 +829,6 @@
                     closestPoint = {x: Math.max(road.xStart, Math.min(road.xEnd, x)), y: road.y};
                 }
             });
-            
-            // Проверяем вертикальные дороги
             roadNetwork.vertical.forEach(road => {
                 const distance = Math.abs(x - road.x);
                 if (distance < minDistance) {
@@ -1149,65 +836,44 @@
                     closestPoint = {x: road.x, y: Math.max(road.yStart, Math.min(road.yEnd, y))};
                 }
             });
-            
             return closestPoint;
         }
-
         function findRoadPath(startX, startY, targetX, targetY) {
             const path = [];
-            
-            // Простой алгоритм: сначала идем по горизонтали, затем по вертикали
-            // но только если есть соответствующие дороги
-            
-            // Определяем, можем ли мы идти по горизонтали
-            const canGoHorizontal = roadNetwork.horizontal.some(road => 
-                Math.abs(startY - road.y) < 10 && 
+            const canGoHorizontal = roadNetwork.horizontal.some(road =>
+                Math.abs(startY - road.y) < 10 &&
                 ((startX <= targetX && road.xStart <= targetX && road.xEnd >= startX) ||
                  (startX >= targetX && road.xStart <= startX && road.xEnd >= targetX))
             );
-            
-            // Определяем, можем ли мы идти по вертикали
-            const canGoVertical = roadNetwork.vertical.some(road => 
-                Math.abs(targetX - road.x) < 10 && 
+            const canGoVertical = roadNetwork.vertical.some(road =>
+                Math.abs(targetX - road.x) < 10 &&
                 ((startY <= targetY && road.yStart <= targetY && road.yEnd >= startY) ||
                  (startY >= targetY && road.yStart <= startY && road.yEnd >= targetY))
             );
-            
             if (canGoHorizontal && canGoVertical) {
-                // Идем сначала по горизонтали, затем по вертикали
                 path.push({x: targetX, y: startY});
             } else if (canGoHorizontal) {
-                // Только по горизонтали
                 path.push({x: targetX, y: startY});
             } else if (canGoVertical) {
-                // Только по вертикали
                 path.push({x: startX, y: targetY});
             } else {
-                // Ищем альтернативный маршрут через пересечения дорог
                 const intersection = findRoadIntersection(startX, startY, targetX, targetY);
                 if (intersection) {
                     path.push(intersection);
                     path.push({x: targetX, y: targetY});
                 } else {
-                    // Если не нашли маршрут, идем напрямую (на крайний случай)
                     path.push({x: targetX, y: targetY});
                 }
             }
-            
             return path;
         }
-
         function findRoadIntersection(startX, startY, targetX, targetY) {
-            // Ищем пересечение дорог, которое можно использовать как промежуточную точку
             for (const hRoad of roadNetwork.horizontal) {
                 for (const vRoad of roadNetwork.vertical) {
                     if (hRoad.xStart <= vRoad.x && hRoad.xEnd >= vRoad.x &&
                         vRoad.yStart <= hRoad.y && vRoad.yEnd >= hRoad.y) {
-                        
-                        // Проверяем, доступна ли эта точка от старта
                         const fromStart = findRoadPath(startX, startY, vRoad.x, hRoad.y);
                         const toTarget = findRoadPath(vRoad.x, hRoad.y, targetX, targetY);
-                        
                         if (fromStart.length > 0 && toTarget.length > 0) {
                             return {x: vRoad.x, y: hRoad.y};
                         }
@@ -1216,231 +882,178 @@
             }
             return null;
         }
-
         function movePedestrians() {
             pedestrians.forEach((pedestrian, index) => {
-                if (pedestrian.caught) return; // Если пойман, не двигаемся
-                
+                if (pedestrian.stopped || pedestrian.caught) return;
+                if (!pedestrian.returning && pedestrian.path.length > 0 && pedestrian.currentPathIndex >= pedestrian.path.length) {
+                    pedestrian.returning = true;
+                    pedestrian.currentPathIndex = 0;
+                    pedestrian.path = generateRoadPath(pedestrian.x, pedestrian.y, pedestrian.startX, pedestrian.startY);
+                }
+                if (pedestrian.returning && pedestrian.path.length > 0 && pedestrian.currentPathIndex >= pedestrian.path.length) {
+                    removePedestrian(pedestrian, index);
+                    return;
+                }
                 if (pedestrian.path.length > 0 && pedestrian.currentPathIndex < pedestrian.path.length) {
                     const nextPoint = pedestrian.path[pedestrian.currentPathIndex];
                     const dx = nextPoint.x - pedestrian.x;
                     const dy = nextPoint.y - pedestrian.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
                     if (distance < pedestrian.speed) {
-                        // Достигли точки пути
                         pedestrian.x = nextPoint.x;
                         pedestrian.y = nextPoint.y;
                         pedestrian.currentPathIndex++;
                     } else {
-                        // Двигаемся к точке
                         const angle = Math.atan2(dy, dx);
                         pedestrian.x += Math.cos(angle) * pedestrian.speed;
                         pedestrian.y += Math.sin(angle) * pedestrian.speed;
                     }
-                    
                     pedestrian.element.setAttribute('cx', pedestrian.x);
                     pedestrian.element.setAttribute('cy', pedestrian.y);
-                } else {
-                    // Достигли цели
-                    if (!pedestrian.returning) {
-                        // Первый раз достигли дома - начинаем возвращение
-                        pedestrian.returning = true;
-                        pedestrian.path = generateRoadPath(pedestrian.x, pedestrian.y, pedestrian.startX, pedestrian.startY);
-                        pedestrian.currentPathIndex = 0;
-                    } else {
-                        // Вернулись к стартовой точке - удаляем пешехода и создаем нового
-                        const idx = pedestrians.indexOf(pedestrian);
-                        if (idx > -1) {
-                            canvas.removeChild(pedestrian.element);
-                            pedestrians.splice(idx, 1);
-                            pedestrianCount--;
-                            updatePedestrianCount();
-                            
-                            // Останавливаем мигание
-                            if (pedestrian.currentPlot) {
-                                pedestrian.currentPlot.classList.remove('blinking');
-                            }
-                            
-                            // Создаем нового пешехода
-                            setTimeout(() => {
-                                if (pedestriansVisible && pedestrians.length < maxPedestrians) {
-                                    spawnPedestrian();
-                                }
-                            }, 2000);
-                        }
-                    }
                 }
             });
         }
-
+        function removePedestrian(pedestrian, index) {
+            if (pedestrian.element.parentNode) {
+                canvas.removeChild(pedestrian.element);
+            }
+            pedestrians.splice(index, 1);
+            pedestrianCount--;
+            updatePedestrianCount();
+            if (pedestrian.currentPlot) {
+                pedestrian.currentPlot.classList.remove('blinking');
+            }
+            resetSecurityAlert();
+            scheduleNextPedestrian();
+        }
         function checkPlotIntersections() {
             const plots = document.querySelectorAll('.plot');
-            
             pedestrians.forEach(pedestrian => {
-                if (pedestrian.caught) return; // Если пойман, не проверяем
-                
+                if (pedestrian.caught || pedestrian.stopped) return;
                 let foundPlot = null;
-                
-                // Проверяем каждый участок на пересечение с пешеходом
                 plots.forEach(plot => {
                     const plotRect = plot.getBoundingClientRect();
                     const canvasRect = canvas.getBoundingClientRect();
-                    
-                    // Преобразуем координаты пешехода в координаты экрана
                     const scaleX = canvasRect.width / 3000;
                     const scaleY = canvasRect.height / 3000;
-                    
                     const pedestrianScreenX = canvasRect.left + pedestrian.x * scaleX;
                     const pedestrianScreenY = canvasRect.top + pedestrian.y * scaleY;
-                    
                     if (pedestrianScreenX >= plotRect.left && pedestrianScreenX <= plotRect.right &&
                         pedestrianScreenY >= plotRect.top && pedestrianScreenY <= plotRect.bottom) {
                         foundPlot = plot;
                     }
                 });
-                
-                // Если пешеход вошел на новый участок
                 if (foundPlot && foundPlot !== pedestrian.currentPlot) {
-                    // Останавливаем мигание предыдущего участка
                     if (pedestrian.currentPlot) {
                         pedestrian.currentPlot.classList.remove('blinking');
                     }
-                    
-                    // Запускаем мигание нового участка
                     foundPlot.classList.add('blinking');
                     pedestrian.currentPlot = foundPlot;
-                    
-                    // Помечаем пешехода как обнаруженного
                     if (!pedestrian.detected) {
                         pedestrian.detected = true;
                         triggerSecurityAlert(pedestrian);
                     }
                 }
-                
-                // Если пешеход покинул участок
                 if (!foundPlot && pedestrian.currentPlot) {
                     pedestrian.currentPlot.classList.remove('blinking');
                     pedestrian.currentPlot = null;
                 }
             });
         }
-
         function checkSecurityUnitIntersections() {
             pedestrians.forEach(pedestrian => {
-                if (pedestrian.caught) return;
-                
-                // Проверяем пересечение с дронами
+                if (pedestrian.caught || pedestrian.stopped) return;
                 drones.forEach(drone => {
                     const dx = pedestrian.x - drone.x;
                     const dy = pedestrian.y - drone.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < 15) { // Если пешеход близко к дрону
+                    if (distance < 20) {
                         catchPedestrian(pedestrian, drone);
                     }
                 });
-                
-                // Проверяем пересечение с машинами
-                policeCars.forEach(car => {
-                    const dx = pedestrian.x - car.x;
-                    const dy = pedestrian.y - car.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < 20) { // Если пешеход близко к машине
-                        catchPedestrian(pedestrian, car);
+            });
+            policeCars.forEach(car => {
+                if (!car.arrivedAtScene) {
+                    const caughtPedestrian = pedestrians.find(p => p.blinking && !p.caught);
+                    if (caughtPedestrian) {
+                        const dx = car.x - caughtPedestrian.x;
+                        const dy = car.y - caughtPedestrian.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 30) {
+                            car.arrivedAtScene = true;
+                            completeCapture(caughtPedestrian, car);
+                        }
                     }
-                });
+                }
             });
         }
-
-        function catchPedestrian(pedestrian, securityUnit) {
-            if (pedestrian.caught) return;
-            
+        function catchPedestrian(pedestrian, drone) {
+            if (pedestrian.blinking) return;
+            pedestrian.blinking = true;
+            pedestrian.stopped = true;
+            pedestrian.element.classList.add('blinking');
+            drone.arrived = true;
+            setTimeout(() => {
+                if (!pedestrian.caught) {
+                    pedestrian.blinking = false;
+                    pedestrian.stopped = false;
+                    pedestrian.element.classList.remove('blinking');
+                }
+            }, 10000);
+        }
+        function completeCapture(pedestrian, car) {
             pedestrian.caught = true;
-            pedestrian.element.classList.add('caught');
-            
-            // Останавливаем пешехода рядом с дроном/машиной
-            const offsetX = (Math.random() - 0.5) * 10;
-            const offsetY = (Math.random() - 0.5) * 10;
-            pedestrian.x = securityUnit.x + offsetX;
-            pedestrian.y = securityUnit.y + offsetY;
-            pedestrian.element.setAttribute('cx', pedestrian.x);
-            pedestrian.element.setAttribute('cy', pedestrian.y);
-            
-            // Через 3 секунды удаляем пешехода и создаем нового
+            drones.forEach(drone => {
+                if (drone.arrived) {
+                    const dx = drone.x - pedestrian.x;
+                    const dy = drone.y - pedestrian.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 30) {
+                        drone.captured = true;
+                    }
+                }
+            });
             setTimeout(() => {
                 const idx = pedestrians.indexOf(pedestrian);
                 if (idx > -1) {
-                    canvas.removeChild(pedestrian.element);
-                    pedestrians.splice(idx, 1);
-                    pedestrianCount--;
-                    updatePedestrianCount();
-                    
-                    // Останавливаем мигание участка
-                    if (pedestrian.currentPlot) {
-                        pedestrian.currentPlot.classList.remove('blinking');
-                    }
-                    
-                    // Возвращаем дроны и машины на базу
-                    returnAllSecurityUnits();
-                    
-                    // Создаем нового пешехода
-                    setTimeout(() => {
-                        if (pedestriansVisible && pedestrians.length < maxPedestrians) {
-                            spawnPedestrian();
-                        }
-                    }, 2000);
+                    removePedestrian(pedestrian, idx);
                 }
-            }, 3000);
+                returnAllSecurityUnits();
+            }, 5000);
         }
-
         function returnAllSecurityUnits() {
-            // Возвращаем всех дронов на базу
             drones.forEach((drone, index) => {
-                returnDroneToBase(drone, index);
+                if (drone.captured) {
+                    returnDroneToBase(drone, index);
+                }
             });
-            
-            // Возвращаем все машины на базу
             policeCars.forEach((car, index) => {
-                returnCarToBase(car, index);
+                if (car.arrivedAtScene) {
+                    returnCarToBase(car, index);
+                }
             });
         }
-
         function updatePedestrianCount() {
             document.getElementById('pedestrianCount').textContent = `Пешеходов: ${pedestrianCount}/${maxPedestrians}`;
         }
-
         // Система безопасности
         function startSecuritySystem() {
-            // Проверяем пересечение с камерами каждые 100 мс
             setInterval(checkCameraIntersections, 100);
-            
-            // Анимируем дронов и полицейские машины
             setInterval(moveSecurityUnits, 50);
         }
-
         function checkCameraIntersections() {
             if (!camerasVisible) return;
-            
             const cameraGroups = document.querySelectorAll('.camera-group');
-            
             pedestrians.forEach(pedestrian => {
-                if (pedestrian.detected || pedestrian.caught) return; // Уже обнаружен или пойман
-                
+                if (pedestrian.detected || pedestrian.caught || pedestrian.stopped) return;
                 cameraGroups.forEach(cameraGroup => {
                     const cameraView = cameraGroup.querySelector('.camera-view');
                     const camera = cameraGroup.querySelector('.camera');
-                    
                     const cameraX = parseFloat(camera.getAttribute('cx'));
                     const cameraY = parseFloat(camera.getAttribute('cy'));
-                    
-                    // Простая проверка расстояния от камеры до пешехода
                     const dx = pedestrian.x - cameraX;
                     const dy = pedestrian.y - cameraY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Если пешеход в зоне обнаружения камеры
                     if (distance < 100) {
                         pedestrian.detected = true;
                         triggerSecurityAlert(pedestrian);
@@ -1448,100 +1061,85 @@
                 });
             });
         }
-
         function triggerSecurityAlert(pedestrian) {
-            if (alertMode) return; // Уже в режиме тревоги
-            
+            if (alertMode) return;
             alertMode = true;
             document.getElementById('alertStatus').textContent = 'Статус: ТРЕВОГА!';
             document.getElementById('alertStatus').classList.add('alert');
-            
-            // Через 2 секунды отправляем дронов и машины из обоих пунктов охраны
+            if (alertTimeout) {
+                clearTimeout(alertTimeout);
+            }
+            alertTimeout = setTimeout(() => {
+                resetSecurityAlert();
+            }, 10000);
             setTimeout(() => {
                 securityPosts.forEach(post => {
-                    launchDronesFromPost(pedestrian, post);
+                    launchDroneFromPost(pedestrian, post);
                     launchPoliceCarFromPost(pedestrian, post);
                 });
             }, 2000);
-            
-            // Через 30 секунд сбрасываем тревогу
-            setTimeout(() => {
-                resetSecurityAlert();
-            }, 30000);
         }
-
         function resetSecurityAlert() {
             alertMode = false;
             document.getElementById('alertStatus').textContent = 'Статус: Норма';
             document.getElementById('alertStatus').classList.remove('alert');
-        }
-
-        function launchDronesFromPost(pedestrian, post) {
-            // Запускаем 2 дрона из каждого пункта охраны
-            for (let i = 0; i < 2; i++) {
-                const drone = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                drone.setAttribute('class', 'drone');
-                drone.setAttribute('cx', post.x);
-                drone.setAttribute('cy', post.y);
-                drone.setAttribute('r', 3);
-                drone.setAttribute('fill', '#666');
-                canvas.appendChild(drone);
-                
-                // Дроны летят прямо к текущему положению пешехода
-                drones.push({
-                    element: drone,
-                    x: post.x,
-                    y: post.y,
-                    targetPedestrian: pedestrian, // Ссылка на пешехода для преследования
-                    speed: 6, // Увеличиваем скорость дронов
-                    arrived: false,
-                    post: post
-                });
+            if (alertTimeout) {
+                clearTimeout(alertTimeout);
+                alertTimeout = null;
             }
         }
-
+        function launchDroneFromPost(pedestrian, post) {
+            const drone = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            drone.setAttribute('class', 'drone');
+            drone.setAttribute('cx', post.x);
+            drone.setAttribute('cy', post.y);
+            drone.setAttribute('r', 8);
+            drone.setAttribute('fill', '#666');
+            canvas.appendChild(drone);
+            drones.push({
+                element: drone,
+                x: post.x,
+                y: post.y,
+                targetPedestrian: pedestrian,
+                speed: 6,
+                arrived: false,
+                captured: false,
+                post: post
+            });
+        }
         function launchPoliceCarFromPost(pedestrian, post) {
             const car = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             car.setAttribute('class', 'police-car');
-            car.setAttribute('x', post.x - 5);
-            car.setAttribute('y', post.y - 3);
-            car.setAttribute('width', 10);
-            car.setAttribute('height', 6);
+            car.setAttribute('x', post.x - 12);
+            car.setAttribute('y', post.y - 8);
+            car.setAttribute('width', 24);
+            car.setAttribute('height', 16);
             car.setAttribute('fill', 'blue');
             canvas.appendChild(car);
-            
-            // Машина едет по дорогам к дому, где находится пешеход
             policeCars.push({
                 element: car,
                 x: post.x,
                 y: post.y,
-                targetPedestrian: pedestrian, // Ссылка на пешехода
-                speed: 4, // Увеличиваем скорость машин
-                arrived: false,
-                path: generateRoadPath(post.x, post.y, pedestrian.targetX, pedestrian.targetY),
+                targetPedestrian: pedestrian,
+                speed: 4,
+                arrivedAtScene: false,
+                path: generateRoadPath(post.x, post.y, pedestrian.x, pedestrian.y),
                 currentPathIndex: 0,
                 post: post
             });
         }
-
         function moveSecurityUnits() {
-            // Двигаем дронов (прямо к текущему положению пешехода)
             drones.forEach((drone, index) => {
-                if (drone.arrived) return;
-                
+                if (drone.arrived || drone.captured) return;
                 const pedestrian = drone.targetPedestrian;
                 if (!pedestrian || pedestrian.caught) {
-                    // Если пешеход уже пойман или удален, возвращаем дрона на базу
                     returnDroneToBase(drone, index);
                     return;
                 }
-                
                 const dx = pedestrian.x - drone.x;
                 const dy = pedestrian.y - drone.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
                 if (distance < drone.speed) {
-                    // Дрон прибыл к пешеходу
                     drone.x = pedestrian.x;
                     drone.y = pedestrian.y;
                     drone.arrived = true;
@@ -1550,64 +1148,50 @@
                     drone.x += Math.cos(angle) * drone.speed;
                     drone.y += Math.sin(angle) * drone.speed;
                 }
-                
                 drone.element.setAttribute('cx', drone.x);
                 drone.element.setAttribute('cy', drone.y);
             });
-            
-            // Двигаем полицейские машины (строго по дорогам)
             policeCars.forEach((car, index) => {
-                if (car.arrived) return;
-                
+                if (car.arrivedAtScene) return;
                 const pedestrian = car.targetPedestrian;
                 if (!pedestrian || pedestrian.caught) {
-                    // Если пешеход уже пойман или удален, возвращаем машину на базу
                     returnCarToBase(car, index);
                     return;
                 }
-                
+                const targetPedestrian = pedestrian.blinking ? pedestrian : car.targetPedestrian;
+                const distanceToTarget = Math.sqrt(
+                    Math.pow(car.x - targetPedestrian.x, 2) +
+                    Math.pow(car.y - targetPedestrian.y, 2)
+                );
+                if (distanceToTarget > 100 || car.currentPathIndex >= car.path.length - 1) {
+                    car.path = generateRoadPath(car.x, car.y, targetPedestrian.x, targetPedestrian.y);
+                    car.currentPathIndex = 0;
+                }
                 if (car.path.length > 0 && car.currentPathIndex < car.path.length) {
                     const nextPoint = car.path[car.currentPathIndex];
                     const dx = nextPoint.x - car.x;
                     const dy = nextPoint.y - car.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
                     if (distance < car.speed) {
-                        // Достигли точки пути
                         car.x = nextPoint.x;
                         car.y = nextPoint.y;
                         car.currentPathIndex++;
                     } else {
-                        // Двигаемся к точке
                         const angle = Math.atan2(dy, dx);
                         car.x += Math.cos(angle) * car.speed;
                         car.y += Math.sin(angle) * car.speed;
                     }
-                    
-                    car.element.setAttribute('x', car.x - 5);
-                    car.element.setAttribute('y', car.y - 3);
-                    
-                    // Проверяем, достигла ли машина конечной цели (дома пешехода)
-                    const finalDistance = Math.sqrt(
-                        Math.pow(car.x - pedestrian.targetX, 2) + 
-                        Math.pow(car.y - pedestrian.targetY, 2)
-                    );
-                    
-                    if (finalDistance < 20) {
-                        car.arrived = true;
-                    }
+                    car.element.setAttribute('x', car.x - 12);
+                    car.element.setAttribute('y', car.y - 8);
                 }
             });
         }
-
         function returnDroneToBase(drone, index) {
             const securityX = drone.post.x;
             const securityY = drone.post.y;
-            
             const dx = securityX - drone.x;
             const dy = securityY - drone.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            
             if (distance < drone.speed) {
                 canvas.removeChild(drone.element);
                 drones.splice(index, 1);
@@ -1617,28 +1201,21 @@
                 drone.y += Math.sin(angle) * drone.speed;
                 drone.element.setAttribute('cx', drone.x);
                 drone.element.setAttribute('cy', drone.y);
-                
-                // Продолжаем движение к базе
                 setTimeout(() => returnDroneToBase(drone, index), 50);
             }
         }
-
         function returnCarToBase(car, index) {
             const securityX = car.post.x;
             const securityY = car.post.y;
-            
-            // Если нет пути, строим его
             if (!car.path || car.path.length === 0) {
                 car.path = generateRoadPath(car.x, car.y, securityX, securityY);
                 car.currentPathIndex = 0;
             }
-            
             if (car.path.length > 0 && car.currentPathIndex < car.path.length) {
                 const nextPoint = car.path[car.currentPathIndex];
                 const dx = nextPoint.x - car.x;
                 const dy = nextPoint.y - car.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
                 if (distance < car.speed) {
                     car.x = nextPoint.x;
                     car.y = nextPoint.y;
@@ -1648,19 +1225,14 @@
                     car.x += Math.cos(angle) * car.speed;
                     car.y += Math.sin(angle) * car.speed;
                 }
-                
-                car.element.setAttribute('x', car.x - 5);
-                car.element.setAttribute('y', car.y - 3);
-                
-                // Продолжаем движение к базе
+                car.element.setAttribute('x', car.x - 12);
+                car.element.setAttribute('y', car.y - 8);
                 setTimeout(() => returnCarToBase(car, index), 50);
             } else {
-                // Достигли базы
                 canvas.removeChild(car.element);
                 policeCars.splice(index, 1);
             }
         }
-
         function toggleCameras() {
             camerasVisible = !camerasVisible;
             const cameraViews = document.querySelectorAll('.camera-view');
@@ -1668,174 +1240,89 @@
                 view.style.display = camerasVisible ? 'block' : 'none';
             });
         }
-
         function togglePedestrians() {
             pedestriansVisible = !pedestriansVisible;
             const pedestrianElements = document.querySelectorAll('.pedestrian');
             pedestrianElements.forEach(pedestrian => {
                 pedestrian.style.display = pedestriansVisible ? 'block' : 'none';
             });
-            
-            // Останавливаем мигание всех участков при выключении пешеходов
             if (!pedestriansVisible) {
                 const plots = document.querySelectorAll('.plot');
                 plots.forEach(plot => {
                     plot.classList.remove('blinking');
                 });
-                
-                // Удаляем всех пешеходов при выключении
                 pedestrians.forEach(pedestrian => {
                     canvas.removeChild(pedestrian.element);
                 });
                 pedestrians = [];
                 pedestrianCount = 0;
                 updatePedestrianCount();
-                
-                // Сбрасываем тревогу
+                if (nextPedestrianTimeout) {
+                    clearTimeout(nextPedestrianTimeout);
+                    nextPedestrianTimeout = null;
+                }
                 resetSecurityAlert();
             } else {
-                // Включаем пешеходов - создаем одного
                 if (pedestrians.length === 0) {
-                    spawnPedestrian();
+                    scheduleNextPedestrian();
                 }
             }
         }
-
-        // Перетаскивание карты для мобильных устройств
-        container.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            isDragging = true;
-            startX = e.touches[0].clientX - translateX;
-            startY = e.touches[0].clientY - translateY;
-            canvas.classList.add('dragging');
-        });
-
-        container.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-
-            translateX = e.touches[0].clientX - startX;
-            translateY = e.touches[0].clientY - startY;
-            updateTransform();
-        });
-
-        container.addEventListener('touchend', () => {
-            isDragging = false;
-            canvas.classList.remove('dragging');
-        });
-
-        // Перетаскивание карты для десктопов
+        // Перетаскивание карты
         container.addEventListener('mousedown', (e) => {
             isDragging = true;
             startX = e.clientX - translateX;
             startY = e.clientY - translateY;
             canvas.classList.add('dragging');
         });
-
         container.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
-
             translateX = e.clientX - startX;
             translateY = e.clientY - startY;
             updateTransform();
         });
-
         container.addEventListener('mouseup', () => {
             isDragging = false;
             canvas.classList.remove('dragging');
         });
-
         container.addEventListener('mouseleave', () => {
             isDragging = false;
             canvas.classList.remove('dragging');
         });
-
-        // Масштабирование для мобильных устройств (жест pinch-to-zoom)
-        let initialDistance = null;
-
-        container.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                e.preventDefault();
-                initialDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-            }
-        });
-
-        container.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && initialDistance !== null) {
-                e.preventDefault();
-                
-                const currentDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                
-                const delta = currentDistance / initialDistance;
-                initialDistance = currentDistance;
-                
-                const rect = container.getBoundingClientRect();
-                const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-                const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-                
-                const oldScale = scale;
-                scale = Math.max(0.2, Math.min(3, scale * delta));
-                
-                // Масштабирование относительно центра жеста
-                translateX = centerX - (centerX - translateX) * (scale / oldScale);
-                translateY = centerY - (centerY - translateY) * (scale / oldScale);
-                
-                updateTransform();
-            }
-        });
-
-        container.addEventListener('touchend', () => {
-            initialDistance = null;
-        });
-
         // Масштабирование колесом мыши
         container.addEventListener('wheel', (e) => {
             e.preventDefault();
-
             const rect = container.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
-
             const oldScale = scale;
             const delta = e.deltaY > 0 ? 0.9 : 1.1;
             scale = Math.max(0.2, Math.min(3, scale * delta));
-
-            // Масштабирование относительно позиции мыши
             translateX = mouseX - (mouseX - translateX) * (scale / oldScale);
             translateY = mouseY - (mouseY - translateY) * (scale / oldScale);
-
             updateTransform();
         });
-
         function zoomIn() {
             scale = Math.min(3, scale * 1.2);
             updateTransform();
         }
-
         function zoomOut() {
             scale = Math.max(0.2, scale / 1.2);
             updateTransform();
         }
-
         function resetView() {
-            scale = 0.3;
+            scale = 0.4;
             const containerWidth = container.clientWidth;
             const containerHeight = container.clientHeight;
             const canvasWidth = 3000 * scale;
             const canvasHeight = 3000 * scale;
-
             translateX = (containerWidth - canvasWidth) / 2;
             translateY = (containerHeight - canvasHeight) / 2;
-
             updateTransform();
         }
-
+        function toggleGrid() {
+            alert('Функция сетки временно недоступна');
+        }
         // Адаптация при изменении размера окна
         window.addEventListener('resize', () => {
             resetView();
@@ -1843,3 +1330,4 @@
     </script>
 </body>
 </html>
+
